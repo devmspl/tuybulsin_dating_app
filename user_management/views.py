@@ -33,7 +33,7 @@ class SignupSerializer(serializers.Serializer):
     password = serializers.CharField(write_only=True)
     first_name = serializers.CharField(max_length=30)
     last_name = serializers.CharField(max_length=150)
-    image = serializers.ImageField()
+    # image = serializers.ImageField()
 
     def create(self, validated_data):
         validated_data['password'] = make_password(validated_data.get('password'))
@@ -140,7 +140,7 @@ class UserSignupView(generics.CreateAPIView):
             openapi.Parameter('password', openapi.IN_FORM, type=openapi.TYPE_STRING, format=openapi.FORMAT_PASSWORD, required=True),
             openapi.Parameter('first_name', openapi.IN_FORM, type=openapi.TYPE_STRING, required=True),
             openapi.Parameter('last_name', openapi.IN_FORM, type=openapi.TYPE_STRING, required=True),
-            openapi.Parameter('image', openapi.IN_FORM, type=openapi.TYPE_FILE, required=True),
+            # openapi.Parameter('image', openapi.IN_FORM, type=openapi.TYPE_FILE, required=True),
         ],
         responses={
             201: 'Created',
