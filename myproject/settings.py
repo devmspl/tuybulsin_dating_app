@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-ybj!pjtuup6z0l31x=+rhk&b*xgmmfpeg+w%v&08bolr+=p4&s
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['tuybulsin-backend.cradle.services', 'www.tuybulsin-backend.cradle.services']
 
 
 # Application definition
