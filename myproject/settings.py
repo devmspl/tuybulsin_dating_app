@@ -152,3 +152,9 @@ SWAGGER_SETTINGS = {
 
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOWED_ORIGINS = [
+    "www.tuybulsin-backend.cradle.services",
+    "tuybulsin-backend.cradle.services",
+    "http://localhost:8080",
+    # Add other allowed origins as needed
+]
