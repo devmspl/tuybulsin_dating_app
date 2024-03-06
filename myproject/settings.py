@@ -155,6 +155,10 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "www.tuybulsin-backend.cradle.services",
     "tuybulsin-backend.cradle.services",
+
     "http://localhost:8080",
     # Add other allowed origins as needed
 ]
+
+#CORS_ALLOW_ALL_ORIGINS = True
+SECURE_SSL_REDIRECT = True
