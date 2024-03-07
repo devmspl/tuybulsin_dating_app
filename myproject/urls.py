@@ -41,18 +41,13 @@ urlpatterns = [
     path('schema/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('admin/', admin.site.urls),
     path('api/', include('user_management.urls')),
+    path('profile/',include('personalprofile.urls'))
       # Path to your schema.yaml file
 
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
-# urlpatterns=[
-#         path('api/swagger.yaml', schema_view.without_ui(cache_timeout=0), name='schema-yaml'),
-#         path('api/swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-#         path('api/redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
-#         path('admin/', admin.site.urls),
-#         path('api/', include('user_management.urls')),
-#     ],
+
 
 
 
