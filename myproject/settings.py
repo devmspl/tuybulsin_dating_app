@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-ybj!pjtuup6z0l31x=+rhk&b*xgmmfpeg+w%v&08bolr+=p4&s
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['tuybulsin-backend.cradle.services', 'www.tuybulsin-backend.cradle.services']
+ALLOWED_HOSTS = ['tuybulsin-backend.cradle.services', 'www.tuybulsin-backend.cradle.services','9f98-14-97-208-198.ngrok-free.app']
 
 
 # Application definition
@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'drf_yasg',
-    'user_management'
+    'user_management',
+    'personalprofile',
 ]
 
 MIDDLEWARE = [
@@ -162,3 +163,11 @@ CORS_ALLOWED_ORIGINS = [
 
 #CORS_ALLOW_ALL_ORIGINS = True
 SECURE_SSL_REDIRECT = False
+
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_SSL_REDIRECT = True
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True

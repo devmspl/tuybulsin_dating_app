@@ -20,3 +20,6 @@ class CustomUser(AbstractUser):
             self.username = self.first_name
         super().save(*args, **kwargs)
 
+
+
+
