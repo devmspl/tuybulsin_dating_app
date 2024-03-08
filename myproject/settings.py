@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'user_management',
     'personalprofile',
+    'profileaction',
 ]
 
 MIDDLEWARE = [
