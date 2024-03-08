@@ -42,7 +42,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('user/', include('user_management.urls')),
     path('profile/',include('personalprofile.urls')),
-      path('profileaction/',include('profileaction.urls'))
+    path('profileaction/',include('profileaction.urls'))
       # Path to your schema.yaml file
 
 ]
