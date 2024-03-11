@@ -41,7 +41,7 @@ class PersonalInformation(models.Model):
     other_skills = models.TextField()
 
     def __str__(self):
-        return self.user.first_name
+        return self.user.email
     
     
 class ImageUpload(models.Model):

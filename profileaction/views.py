@@ -38,9 +38,11 @@ class DislikeProfileAPIView(APIView):
 
 class LikedProfilesAPIView(APIView):
     authentication_classes = [TokenAuthentication]
+ 
     permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
+ 
         assert request.user.is_authenticated, "User must be authenticated"
         print('profile', request.user)
         
