@@ -105,9 +105,9 @@ class LoginAPIView(ObtainAuthToken):
             user = CustomUser.objects.get(amplify_user_id=amplify_user_id)
              
         except CustomUser.DoesNotExist:
-            user = CustomUser.objects.create_user(amplify_user_id=amplify_user_id,email = email)
+            user = CustomUser.objects.create_user(amplify_user_id=amplify_user_id,email = email,username = email)
            
-            return Response({'message': 'User does not exist'}, status=status.HTTP_404_NOT_FOUND)
+            # return Response({'message': 'User Created Successfully'}, status=status.HTTP_200_OK)
         
         # Authenticate the user
         # user = authenticate(request, username=user.amplify_user_id, password=None)
