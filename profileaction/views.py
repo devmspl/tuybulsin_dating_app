@@ -12,6 +12,8 @@ from .models import PersonalInformation, LikeDislike
 from .serializers import LikeDislikeSerializer
 from user_management.models import CustomUser
 
+
+
 class LikeProfileAPIView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -26,9 +28,12 @@ class LikeProfileAPIView(APIView):
 
 
 
+
+
 class DislikeProfileAPIView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
+
 
     def post(self, request, pk, format=None):
         profile = PersonalInformation.objects.get(pk=pk)
@@ -42,7 +47,8 @@ class LikedProfilesAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
- 
+
+
         assert request.user.is_authenticated, "User must be authenticated"
         print('profile', request.user)
         
@@ -53,5 +59,6 @@ class LikedProfilesAPIView(APIView):
         liked_profiles = PersonalInformation.objects.filter(likedislike__user=user, likedislike__liked=True)
         print('liked', liked_profiles)
 
-        serializer = PersonalInformationSerializer(liked_profiles, many=True)
+        serializer = PersonalInformationSerializer(l
+                                                   iked_profiles, many=True)
         return Response(serializer.data, status=200)

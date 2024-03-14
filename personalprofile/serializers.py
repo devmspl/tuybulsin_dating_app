@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import PersonalInformation
+from .models import PersonalInformation, Plan
 
 class PersonalInformationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -9,3 +9,9 @@ class PersonalInformationSerializer(serializers.ModelSerializer):
 
 class ImageUploadSerializer(serializers.Serializer):
     image = serializers.ImageField()
+
+
+class PlanSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Plan
+        fields = '__all__'

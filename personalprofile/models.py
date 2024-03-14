@@ -1,6 +1,24 @@
 from django.db import models
 from django.conf import settings
 # Create your models here.
+
+
+class Plan(models.Model):
+    BASIC = 'basic'
+    PREMIUM = 'premium'
+    PLAN_CHOICES = [
+        (BASIC, 'Basic'),
+        (PREMIUM, 'Premium'),
+    ]
+    name = models.CharField(max_length=20, choices=PLAN_CHOICES, default=BASIC)
+    features1 = models.TextField()
+    features2 = models.TextField()
+    features3 = models.TextField()
+
+
+    def __str__(self):
+        return self.get_name_display()
+
 class PersonalInformation(models.Model):
     GENDER_CHOICES = (
         ('M', 'Male'),
@@ -39,6 +57,8 @@ class PersonalInformation(models.Model):
     native_language = models.CharField(max_length=255)
     other_languages = models.CharField(max_length=255)
     other_skills = models.TextField()
+    # plan = models.ForeignKey(Plan, on_delete=models.SET_DEFAULT, default=Plan.objects.get(name='basic'))
+    plan = models.ForeignKey('Plan', on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
         return self.user.email
@@ -50,3 +70,5 @@ class ImageUpload(models.Model):
 
     def __str__(self):
         return self.personal_info.user.first_name + " - " + str(self.id)
+    
+

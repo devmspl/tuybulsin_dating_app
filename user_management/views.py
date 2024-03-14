@@ -40,6 +40,7 @@ class SignupSerializer(serializers.Serializer):
 
 
 
+
 class UserSignupView(generics.CreateAPIView):
     serializer_class = SignupSerializer
     permission_classes = [AllowAny]
@@ -102,7 +103,7 @@ class LoginAPIView(ObtainAuthToken):
         email = request.data.get('email')
         # Check if a user with the given amplify_user_id exists
         try:
-            user = CustomUser.objects.get(amplify_user_id=amplify_user_id)
+            user = CustomUser.objects.get(amplify_user_id=amplify_user_id,username = email)
              
         except CustomUser.DoesNotExist:
             user = CustomUser.objects.create_user(amplify_user_id=amplify_user_id,email = email,username = email)
@@ -268,6 +269,7 @@ class UserDeleteView(APIView):
                 in_=openapi.IN_PATH,
                 type=openapi.TYPE_INTEGER,
                 description='User ID',
+              
                 required=True,
             ),
         ],
@@ -275,6 +277,7 @@ class UserDeleteView(APIView):
             204: 'Deleted successfully',
             401: 'Unauthorized',
         }
+
     )
     def delete(self, request, id):
         user = get_object_or_404(CustomUser, pk=id)

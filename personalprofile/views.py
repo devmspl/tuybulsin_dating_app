@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 
 # Create your views here.
 from django.shortcuts import render
@@ -9,8 +9,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
-from .models import ImageUpload, PersonalInformation
-from .serializers import ImageUploadSerializer, PersonalInformationSerializer
+
+from user_management.models import CustomUser
+from .models import ImageUpload, PersonalInformation, Plan
+from .serializers import ImageUploadSerializer, PersonalInformationSerializer, PlanSerializer
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -20,6 +22,7 @@ from .serializers import PersonalInformationSerializer
 class ProfileCreateAPIView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
+
 
     @swagger_auto_schema(
         request_body=PersonalInformationSerializer,
@@ -114,3 +117,132 @@ class ImageUploadAPIView(APIView):
             ImageUpload.objects.create(personal_info=personal_info, image=image)
             return Response({"message": "Image uploaded successfully."}, status=200)
         return Response(serializer.errors, status=400)
+    
+
+class PersonalInformationFilterAPIView(APIView):
+    serializer_class = PersonalInformationSerializer
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('age', openapi.IN_QUERY, description='Filter by age', type=openapi.TYPE_INTEGER),
+            openapi.Parameter('location', openapi.IN_QUERY, description='Filter by location', type=openapi.TYPE_STRING),
+            openapi.Parameter('education', openapi.IN_QUERY, description='Filter by education', type=openapi.TYPE_STRING),
+            openapi.Parameter('profession', openapi.IN_QUERY, description='Filter by profession', type=openapi.TYPE_STRING),
+            openapi.Parameter('height', openapi.IN_QUERY, description='Filter by height', type=openapi.TYPE_STRING),
+            openapi.Parameter('weight', openapi.IN_QUERY, description='Filter by weight', type=openapi.TYPE_STRING),
+        ]
+    )
+    def get(self, request):
+        queryset = PersonalInformation.objects.all()
+        age = request.query_params.get('age')
+        location = request.query_params.get('location')
+        education = request.query_params.get('education')
+        profession = request.query_params.get('profession')
+        height = request.query_params.get('height')
+        weight = request.query_params.get('weight')
+
+        if age:
+            birth_year = 2024 - int(age)  # Assuming current year is 2024
+            queryset = queryset.filter(year_of_birth=birth_year)
+        if location:
+            queryset = queryset.filter(city__icontains=location) | queryset.filter(country__icontains=location)
+        if education:
+            queryset = queryset.filter(education__icontains=education)
+        if profession:
+            queryset = queryset.filter(job_title__icontains=profession) | queryset.filter(company_name__icontains=profession)
+        if height:
+            queryset = queryset.filter(height=height)
+        if weight:
+            queryset = queryset.filter(weight=weight)
+
+        serializer = PersonalInformationSerializer(queryset, many=True)
+        return Response(serializer.data)
+    
+
+# class PlanAPIView(APIView):
+#     def get(self, request):
+#         user = request.user
+#         if user.is_authenticated:
+#             profile = PersonalInformation.objects.get(user=user)
+#             serializer = PlanSerializer(profile.plan)
+#             return Response(serializer.data)
+#         else:
+#             return Response({'error': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
+
+#     def put(self, request):
+#         user = request.user
+#         if user.is_authenticated:
+#             profile = PersonalInformation.objects.get(user=user)
+#             plan_name = request.data.get('plan')
+#             try:
+#                 new_plan = Plan.objects.get(name=plan_name)
+#                 profile.plan = new_plan
+#                 profile.save()
+#                 serializer = PlanSerializer(profile.plan)
+#                 return Response(serializer.data)
+#             except Plan.DoesNotExist:
+#                 return Response({'error': 'Invalid plan'}, status=status.HTTP_400_BAD_REQUEST)
+#         else:
+#             return Response({'error': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
+
+#     def delete(self, request):
+#         user = request.user
+#         if user.is_authenticated:
+#             profile = PersonalInformation.objects.get(user=user)
+#             default_plan = Plan.objects.get(name='basic')
+#             profile.plan = default_plan
+#             profile.save()
+#             serializer = PlanSerializer(profile.plan)
+#             return Response(serializer.data)
+#         else:
+#             return Response({'error': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
+    
+class PlanAPIView(APIView):
+    @swagger_auto_schema(
+        responses={200: PlanSerializer()},
+        operation_summary="Get user's plan",
+        operation_description="Get the current plan of the specified user."
+    )
+    def get(self, request, user_id):
+        user = get_object_or_404(CustomUser, id=user_id)
+        profile = get_object_or_404(PersonalInformation, user=user)
+        serializer = PlanSerializer(profile.plan)
+        return Response(serializer.data)
+
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'plan': openapi.Schema(type=openapi.TYPE_STRING, enum=['basic', 'premium'])
+            },
+            required=['plan']
+        ),
+        responses={200: PlanSerializer()},
+        operation_summary="Update user's plan",
+        operation_description="Update the plan of the specified user."
+    )
+    def put(self, request, user_id):
+        user = get_object_or_404(CustomUser, id=user_id)
+        profile = get_object_or_404(PersonalInformation, user=user)
+        plan_name = request.data.get('plan')
+        try:
+            new_plan = Plan.objects.get(name=plan_name)
+            profile.plan = new_plan
+            profile.save()
+            serializer = PlanSerializer(profile.plan)
+            return Response(serializer.data)
+        except Plan.DoesNotExist:
+            return Response({'error': 'Invalid plan'}, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(
+        responses={200: PlanSerializer()},
+        operation_summary="Delete user's plan",
+        operation_description="Delete the plan of the specified user, reverting to the default 'basic' plan."
+    )
+    def delete(self, request, user_id):
+        user = get_object_or_404(CustomUser, id=user_id)
+        profile = get_object_or_404(PersonalInformation, user=user)
+        default_plan = Plan.objects.get(name='basic')
+        profile.plan = default_plan
+        profile.save()
+        serializer = PlanSerializer(profile.plan)
+        return Response(serializer.data)
