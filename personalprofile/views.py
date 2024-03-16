@@ -39,6 +39,38 @@ class ProfileCreateAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class ProfileRetrieveAPIView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('id', in_=openapi.IN_QUERY, type=openapi.TYPE_INTEGER, description='ID of the profile')
+        ],
+        responses={
+            200: PersonalInformationSerializer(),
+            404: "Profile not found"
+        }
+    )
+
+    def get(self, request, pk):
+        print('profile_id',pk)
+        # profile_id = request.query_params.get('id')
+        # if not profile_id:
+        #     return Response({'message': 'ID parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
+        user = CustomUser.objects.filter(id=pk)
+        print('user',user)
+        try:
+            # profile = get_object_or_404(PersonalInformation,user=user)
+            profile = PersonalInformation.objects.get(user_id=user.id)
+            print('profile', profile)
+        except PersonalInformation.DoesNotExist:
+            return Response({'message': 'Profile not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = PersonalInformationSerializer(profile)
+        return Response({'profile':serializer.data}, status=status.HTTP_200_OK)
+    
+
 
 class ProfileUpdateAPIView(APIView):
     authentication_classes = [TokenAuthentication]

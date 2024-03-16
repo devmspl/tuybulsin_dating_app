@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import LoginAPIView, UserDeleteView, UserDetailsView, UserSignupView ,UserLoginView, UserUpdateView#UserUpdateView
+from .views import LoginAPIView, UserDeleteView, UserDetailsView, UserSignupView, UserUpdateView#UserUpdateView
 # from rest_framework.authtoken.views import obtain_auth_token
 urlpatterns = [
     path('signup/', UserSignupView.as_view(), name='user_signup'),

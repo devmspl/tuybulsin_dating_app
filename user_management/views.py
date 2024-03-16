@@ -83,6 +83,7 @@ class UserSignupView(generics.CreateAPIView):
 
 class LoginAPIView(ObtainAuthToken):
     permission_classes = [AllowAny]
+    
     @swagger_auto_schema(
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
@@ -98,9 +99,12 @@ class LoginAPIView(ObtainAuthToken):
             status.HTTP_404_NOT_FOUND: openapi.Response(description='User does not exist'),
         }
     )
+   
     def post(self, request):
+       
         amplify_user_id = request.data.get('amplify_user_id')
         email = request.data.get('email')
+       
         # Check if a user with the given amplify_user_id exists
         try:
             user = CustomUser.objects.get(amplify_user_id=amplify_user_id,username = email)
@@ -116,78 +120,87 @@ class LoginAPIView(ObtainAuthToken):
             login(request, user)
           
             token, _ = Token.objects.get_or_create(user=user)
-            return Response({'message': 'Login successful','token': token.key},status=status.HTTP_200_OK)
+            return Response({'message': 'Login successful','token': token.key,'user_id':user.id},status=status.HTTP_200_OK)
         else:
              
             return Response({'message': 'Login failed'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+    # def get(self, request, *args, **kwargs):
+    #     # Ensure user is authenticated
+    #     user = CustomUser.objects.get(amplify_user_id=amplify_user_id,username = email)
+    #     if request.user.is_authenticated:
+    #         token, _ = Token.objects.get_or_create(user=request.user)
+    #         return Response({'token': token.key,'username': request.user})
+    #     else:
+    #         return Response(status=401)
        
 
-class UserLoginView(ObtainAuthToken):
-    permission_classes = [AllowAny]
-    @swagger_auto_schema(
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            required=['amplify_user_id'],
-            properties={
-                # 'phonenumber': openapi.Schema(type=openapi.TYPE_NUMBER),
-                # 'password': openapi.Schema(type=openapi.TYPE_STRING),
-                'email': openapi.Schema(type=openapi.TYPE_STRING),
-                'amplify_user_id': openapi.Schema(type=openapi.TYPE_STRING),
-            }
-        ),
-        responses={
-            200: openapi.Response(
-                description='Token is generated successfully',
-                schema=openapi.Schema(
-                    type=openapi.TYPE_OBJECT,
-                    properties={
-                        'token': openapi.Schema(type=openapi.TYPE_STRING),
-                    }
-                )
-            ),
-            400: 'Bad Request',
-        }
-    )
-    def post(self, request, *args, **kwargs):
-        # phonenumber = request.data.get('phonenumber')
-        # password = request.data.get('password')
-        amplify_user_id = request.data.get('amplify_user_id')
-        email = request.data.get('email')
-        if not amplify_user_id :
-            return Response({'error': 'Please provide amplify_user_id'}, status=status.HTTP_400_BAD_REQUEST)
-        user = CustomUser.objects.filter(amplify_user_id=amplify_user_id).first()
-        print(user,user.username)
-        # if not user or not user.check_password(password):
-        #     return Response({'error': 'Invalid phone number or password'}, status=status.HTTP_400_BAD_REQUEST)
+# class UserLoginView(ObtainAuthToken):
+#     permission_classes = [AllowAny]
+#     @swagger_auto_schema(
+#         request_body=openapi.Schema(
+#             type=openapi.TYPE_OBJECT,
+#             required=['amplify_user_id'],
+#             properties={
+#                 # 'phonenumber': openapi.Schema(type=openapi.TYPE_NUMBER),
+#                 # 'password': openapi.Schema(type=openapi.TYPE_STRING),
+#                 'email': openapi.Schema(type=openapi.TYPE_STRING),
+#                 'amplify_user_id': openapi.Schema(type=openapi.TYPE_STRING),
+#             }
+#         ),
+#         responses={
+#             200: openapi.Response(
+#                 description='Token is generated successfully',
+#                 schema=openapi.Schema(
+#                     type=openapi.TYPE_OBJECT,
+#                     properties={
+#                         'token': openapi.Schema(type=openapi.TYPE_STRING),
+#                     }
+#                 )
+#             ),
+#             400: 'Bad Request',
+#         }
+#     )
+#     def post(self, request, *args, **kwargs):
+#         # phonenumber = request.data.get('phonenumber')
+#         # password = request.data.get('password')
+#         amplify_user_id = request.data.get('amplify_user_id')
+#         email = request.data.get('email')
+#         if not amplify_user_id :
+#             return Response({'error': 'Please provide amplify_user_id'}, status=status.HTTP_400_BAD_REQUEST)
+#         user = CustomUser.objects.filter(amplify_user_id=amplify_user_id).first()
+#         print(user,user.username)
+#         # if not user or not user.check_password(password):
+#         #     return Response({'error': 'Invalid phone number or password'}, status=status.HTTP_400_BAD_REQUEST)
 
-        token, _ = Token.objects.get_or_create(user=user)
+#         token, _ = Token.objects.get_or_create(user=user)
 
-        # return super().post(request, *args, **kwargs)
-        return Response({'token': token.key}, status=status.HTTP_200_OK)
+#         # return super().post(request, *args, **kwargs)
+#         return Response({'token': token.key,'user_id':user.id}, status=status.HTTP_200_OK)
     
 
 
-    @swagger_auto_schema(
-        responses={
-            200: openapi.Response(
-                description='Token is retrieved successfully',
-                schema=openapi.Schema(
-                    type=openapi.TYPE_OBJECT,
-                    properties={
-                        'token': openapi.Schema(type=openapi.TYPE_STRING),
-                    }
-                )
-            ),
-            401: 'Unauthorized',
-        }
-    )
-    def get(self, request, *args, **kwargs):
-        # Ensure user is authenticated
-        if request.user.is_authenticated:
-            token, _ = Token.objects.get_or_create(user=request.user)
-            return Response({'token': token.key,'username': request.user.username})
-        else:
-            return Response(status=401)
+    # @swagger_auto_schema(
+    #     responses={
+    #         200: openapi.Response(
+    #             description='Token is retrieved successfully',
+    #             schema=openapi.Schema(
+    #                 type=openapi.TYPE_OBJECT,
+    #                 properties={
+    #                     'token': openapi.Schema(type=openapi.TYPE_STRING),
+    #                 }
+    #             )
+    #         ),
+    #         401: 'Unauthorized',
+    #     }
+    # )
+    # def get(self, request, *args, **kwargs):
+    #     # Ensure user is authenticated
+    #     if request.user.is_authenticated:
+    #         token, _ = Token.objects.get_or_create(user=request.user)
+    #         return Response({'token': token.key,'username': request.user})
+    #     else:
+    #         return Response(status=401)
 
 
 class UserDetailsView(APIView):

@@ -59,6 +59,5 @@ class LikedProfilesAPIView(APIView):
         liked_profiles = PersonalInformation.objects.filter(likedislike__user=user, likedislike__liked=True)
         print('liked', liked_profiles)
 
-        serializer = PersonalInformationSerializer(l
-                                                   iked_profiles, many=True)
+        serializer = PersonalInformationSerializer(liked_profiles, many=True)
         return Response(serializer.data, status=200)
