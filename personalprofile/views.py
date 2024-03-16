@@ -58,8 +58,12 @@ class ProfileRetrieveAPIView(APIView):
         # profile_id = request.query_params.get('id')
         # if not profile_id:
         #     return Response({'message': 'ID parameter is required'}, status=status.HTTP_400_BAD_REQUEST)
-        user = CustomUser.objects.filter(id=pk)
-        print('user',user)
+       
+        try:
+            user = CustomUser.objects.get(id=pk)
+            print('user',user)
+        except CustomUser.DoesNotExist:
+            return Response({'message': 'Profile not found'}, status=status.HTTP_404_NOT_FOUND)
         try:
             # profile = get_object_or_404(PersonalInformation,user=user)
             profile = PersonalInformation.objects.get(user_id=user.id)
