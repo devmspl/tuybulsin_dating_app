@@ -10,9 +10,10 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 
+from personalprofile.forms import UserPreferenceForm
 from user_management.models import CustomUser
 from .models import ImageUpload, PersonalInformation, Plan
-from .serializers import ImageUploadSerializer, PersonalInformationSerializer, PlanSerializer
+from .serializers import ImageUploadSerializer, PersonalInformationSerializer, PlanSerializer, UserPreferenceSerializer
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -155,43 +156,43 @@ class ImageUploadAPIView(APIView):
         return Response(serializer.errors, status=400)
     
 
-class PersonalInformationFilterAPIView(APIView):
-    serializer_class = PersonalInformationSerializer
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter('age', openapi.IN_QUERY, description='Filter by age', type=openapi.TYPE_INTEGER),
-            openapi.Parameter('location', openapi.IN_QUERY, description='Filter by location', type=openapi.TYPE_STRING),
-            openapi.Parameter('education', openapi.IN_QUERY, description='Filter by education', type=openapi.TYPE_STRING),
-            openapi.Parameter('profession', openapi.IN_QUERY, description='Filter by profession', type=openapi.TYPE_STRING),
-            openapi.Parameter('height', openapi.IN_QUERY, description='Filter by height', type=openapi.TYPE_STRING),
-            openapi.Parameter('weight', openapi.IN_QUERY, description='Filter by weight', type=openapi.TYPE_STRING),
-        ]
-    )
-    def get(self, request):
-        queryset = PersonalInformation.objects.all()
-        age = request.query_params.get('age')
-        location = request.query_params.get('location')
-        education = request.query_params.get('education')
-        profession = request.query_params.get('profession')
-        height = request.query_params.get('height')
-        weight = request.query_params.get('weight')
+# class PersonalInformationFilterAPIView(APIView):
+#     serializer_class = PersonalInformationSerializer
+#     @swagger_auto_schema(
+#         manual_parameters=[
+#             openapi.Parameter('age', openapi.IN_QUERY, description='Filter by age', type=openapi.TYPE_INTEGER),
+#             openapi.Parameter('location', openapi.IN_QUERY, description='Filter by location', type=openapi.TYPE_STRING),
+#             openapi.Parameter('education', openapi.IN_QUERY, description='Filter by education', type=openapi.TYPE_STRING),
+#             openapi.Parameter('profession', openapi.IN_QUERY, description='Filter by profession', type=openapi.TYPE_STRING),
+#             openapi.Parameter('height', openapi.IN_QUERY, description='Filter by height', type=openapi.TYPE_STRING),
+#             openapi.Parameter('weight', openapi.IN_QUERY, description='Filter by weight', type=openapi.TYPE_STRING),
+#         ]
+#     )
+#     def get(self, request):
+#         queryset = PersonalInformation.objects.all()
+#         age = request.query_params.get('age')
+#         location = request.query_params.get('location')
+#         education = request.query_params.get('education')
+#         profession = request.query_params.get('profession')
+#         height = request.query_params.get('height')
+#         weight = request.query_params.get('weight')
 
-        if age:
-            birth_year = 2024 - int(age)  # Assuming current year is 2024
-            queryset = queryset.filter(year_of_birth=birth_year)
-        if location:
-            queryset = queryset.filter(city__icontains=location) | queryset.filter(country__icontains=location)
-        if education:
-            queryset = queryset.filter(education__icontains=education)
-        if profession:
-            queryset = queryset.filter(job_title__icontains=profession) | queryset.filter(company_name__icontains=profession)
-        if height:
-            queryset = queryset.filter(height=height)
-        if weight:
-            queryset = queryset.filter(weight=weight)
+#         if age:
+#             birth_year = 2024 - int(age)  # Assuming current year is 2024
+#             queryset = queryset.filter(year_of_birth=birth_year)
+#         if location:
+#             queryset = queryset.filter(city__icontains=location) | queryset.filter(country__icontains=location)
+#         if education:
+#             queryset = queryset.filter(education__icontains=education)
+#         if profession:
+#             queryset = queryset.filter(job_title__icontains=profession) | queryset.filter(company_name__icontains=profession)
+#         if height:
+#             queryset = queryset.filter(height=height)
+#         if weight:
+#             queryset = queryset.filter(weight=weight)
 
-        serializer = PersonalInformationSerializer(queryset, many=True)
-        return Response(serializer.data)
+#         serializer = PersonalInformationSerializer(queryset, many=True)
+#         return Response(serializer.data)
     
 
 # class PlanAPIView(APIView):
@@ -231,7 +232,75 @@ class PersonalInformationFilterAPIView(APIView):
 #             return Response(serializer.data)
 #         else:
 #             return Response({'error': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
-    
+
+
+
+# class SetUserPreferenceAPIView(APIView):
+#     def post(self, request):
+#         amplify_user_id = request.data.get('amplify_user_id')
+#         age = request.data.get('age')
+#         location = request.data.get('location')
+#         education = request.data.get('education')
+#         profession = request.data.get('profession')
+#         height = request.data.get('height')
+#         weight = request.data.get('weight')
+
+#         try:
+#             user = CustomUser.objects.get(amplify_user_id=amplify_user_id)
+#         except CustomUser.DoesNotExist:
+#             return Response({"error": "User not found"}, status=404)
+
+#         user_preference_data = {
+#             'user': user.id,
+#             'age': age,
+#             'location': location,
+#             'education': education,
+#             'profession': profession,
+#             'height': height,
+#             'weight': weight,
+#         }
+
+#         serializer = UserPreferenceSerializer(data=user_preference_data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data, status=201)
+#         return Response(serializer.errors, status=400)
+
+class SetUserPreferenceAPIView(APIView):
+    @swagger_auto_schema(request_body=UserPreferenceSerializer)
+    def post(self, request):
+        form = UserPreferenceForm(request.data)
+        if form.is_valid():
+            amplify_user_id = form.cleaned_data.get('amplify_user_id')
+            age = form.cleaned_data.get('age')
+            location = form.cleaned_data.get('location')
+            education = form.cleaned_data.get('education')
+            profession = form.cleaned_data.get('profession')
+            height = form.cleaned_data.get('height')
+            weight = form.cleaned_data.get('weight')
+
+            try:
+                user = CustomUser.objects.get(amplify_user_id=amplify_user_id)
+            except CustomUser.DoesNotExist:
+                return Response({"error": "User not found"}, status=404)
+
+            user_preference_data = {
+                'user': user.id,
+                'age': age,
+                'location': location,
+                'education': education,
+                'profession': profession,
+                'height': height,
+                'weight': weight,
+            }
+
+            serializer = UserPreferenceSerializer(data=user_preference_data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=201)
+            return Response(serializer.errors, status=400)
+        return Response(form.errors, status=400)
+
 class PlanAPIView(APIView):
     @swagger_auto_schema(
         responses={200: PlanSerializer()},

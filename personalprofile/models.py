@@ -1,5 +1,7 @@
 from django.db import models
 from django.conf import settings
+
+from user_management.models import CustomUser
 # Create your models here.
 
 
@@ -75,3 +77,15 @@ class ImageUpload(models.Model):
         return self.personal_info.user.first_name + " - " + str(self.id)
     
 
+class UserPreference(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    age_min = models.IntegerField(blank=True, null=True)
+    age_max = models.IntegerField(blank=True, null=True)
+    location = models.CharField(max_length=255, blank=True, null=True)
+    education = models.CharField(max_length=255, blank=True, null=True)
+    profession = models.CharField(max_length=255, blank=True, null=True)
+    height = models.CharField(max_length=255, blank=True, null=True)
+    weight = models.CharField(max_length=255, blank=True, null=True)
+
+    def __str__(self):
+        return self.user.email
