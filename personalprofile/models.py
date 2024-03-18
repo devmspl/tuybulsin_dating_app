@@ -43,6 +43,8 @@ class PersonalInformation(models.Model):
     
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='personal_information')
     # gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
+    first_name = models.CharField(max_length = 200,blank=True,null=True)
+    last_name = models.CharField(max_length = 200,blank=True,null=True)
     location = models.CharField(max_length = 200,blank=True,null=True)
     gender = models.CharField(max_length=100)
     year_of_birth = models.CharField(max_length=50,default=0)

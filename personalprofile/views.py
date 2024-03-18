@@ -266,43 +266,89 @@ class ImageUploadAPIView(APIView):
 #             return Response(serializer.data, status=201)
 #         return Response(serializer.errors, status=400)
 
-class SetUserPreferenceAPIView(APIView):
-    @swagger_auto_schema(request_body=UserPreferenceSerializer)
-    def post(self, request):
-        form = UserPreferenceForm(request.data)
-        if form.is_valid():
-            amplify_user_id = form.cleaned_data.get('amplify_user_id')
-            age_min = form.cleaned_data.get('age_min')
-            age_max = form.cleaned_data.get('age_max')
-            location = form.cleaned_data.get('location')
-            education = form.cleaned_data.get('education')
-            profession = form.cleaned_data.get('profession')
-            height = form.cleaned_data.get('height')
-            weight = form.cleaned_data.get('weight')
+# class SetUserPreferenceAPIView(APIView):
+#     @swagger_auto_schema(request_body=UserPreferenceSerializer)
+#     def post(self, request):
+#         form = UserPreferenceForm(request.data)
+#         if form.is_valid():
+#             user_id = request.user.id
+#             print('user',user_id)
 
-            try:
-                user = CustomUser.objects.get(amplify_user_id=amplify_user_id)
-            except CustomUser.DoesNotExist:
-                return Response({"error": "User not found"}, status=404)
+#             age_min = form.cleaned_data.get('age_min')
+#             age_max = form.cleaned_data.get('age_max')
+#             location = form.cleaned_data.get('location')
+#             education = form.cleaned_data.get('education')
+#             profession = form.cleaned_data.get('profession')
+#             height = form.cleaned_data.get('height')
+#             weight = form.cleaned_data.get('weight')
 
-            user_preference_data = {
-                'user': user.id,
-                'age_min': age_min,
-                'age_max': age_max,
-                'location': location,
-                'education': education,
-                'profession': profession,
-                'height': height,
-                'weight': weight,
-            }
+#             try:
+#                 user = CustomUser.objects.get(id=user_id)
+#             except CustomUser.DoesNotExist:
+#                 return Response({"error": "User not found"}, status=404)
 
-            serializer = UserPreferenceSerializer(data=user_preference_data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=201)
-            return Response(serializer.errors, status=400)
-        return Response(form.errors, status=400)
+#             user_preference_data = {
+#                 'user': user.id,
+#                 'age_min': age_min,
+#                 'age_max': age_max,
+#                 'location': location,
+#                 'education': education,
+#                 'profession': profession,
+#                 'height': height,
+#                 'weight': weight,
+#             }
+
+#             serializer = UserPreferenceSerializer(data=user_preference_data)
+#             if serializer.is_valid():
+#                 serializer.save()
+#                 return Response(serializer.data, status=201)
+#             return Response(serializer.errors, status=400)
+#         return Response(form.errors, status=400)
     
+
+
+class SetUserPreferenceAPIView(APIView):
+    @swagger_auto_schema(
+        responses={200: UserPreferenceSerializer(many=True)}
+    )
+    def get(self, request, user_id):
+        preferences = UserPreference.objects.filter(user_id=user_id)
+        serializer = UserPreferenceSerializer(preferences, many=True)
+        return Response(serializer.data)
+
+    @swagger_auto_schema(
+        request_body=UserPreferenceSerializer,
+        responses={200: UserPreferenceSerializer}
+    )
+    def post(self, request, user_id):
+        request.data['user'] = user_id
+        serializer = UserPreferenceSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class UserPreferenceAPIView(APIView):
+    @swagger_auto_schema(
+        responses={200: UserPreferenceSerializer(many=True)}
+    )
+    def get(self, request, user_id):
+        preferences = UserPreference.objects.filter(user_id=user_id)
+        serializer = UserPreferenceSerializer(preferences, many=True)
+        return Response(serializer.data)
+
+    @swagger_auto_schema(
+        request_body=UserPreferenceSerializer,
+        responses={200: UserPreferenceSerializer}
+    )
+    def post(self, request, user_id):
+        request.data['user'] = user_id
+        serializer = UserPreferenceSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 class UpdateUserPreferenceAPIView(APIView):
     @swagger_auto_schema(request_body=UserPreferenceSerializer)
     def put(self, request):
