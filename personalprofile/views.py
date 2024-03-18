@@ -102,7 +102,7 @@ class ProfileUpdateAPIView(APIView):
                 'other_languages': openapi.Schema(type=openapi.TYPE_STRING),
                 'other_skills': openapi.Schema(type=openapi.TYPE_STRING),
             },
-            required=['gender', 'year_of_birth', 'marital_status', 'nationality', 'height', 'weight', 'education', 'job_title', 'company_name', 'city', 'country', 'residency_status', 'religion', 'religiousness_scale', 'native_language', 'other_languages', 'other_skills'],
+            #required=['gender', 'year_of_birth', 'marital_status', 'nationality', 'height', 'weight', 'education', 'job_title', 'company_name', 'city', 'country', 'residency_status', 'religion', 'religiousness_scale', 'native_language', 'other_languages', 'other_skills'],
         ),
         responses={
             '200': openapi.Response('OK', PersonalInformationSerializer),

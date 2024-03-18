@@ -20,29 +20,31 @@ class Plan(models.Model):
         return self.get_name_display()
 
 class PersonalInformation(models.Model):
-    GENDER_CHOICES = (
-        ('M', 'Male'),
-        ('F', 'Female'),
-        ('O', 'Other')
-    )
-    MARITAL_STATUS_CHOICES = (
-        ('S', 'Single'),
-        ('M', 'Married'),
-        ('D', 'Divorced'),
-        ('W', 'Widowed'),
-        ('O', 'Other')
-    )
-    RESIDENCY_STATUS_CHOICES = (
-        ('RD', 'Residency Permit'),
-        ('RR', 'Residency Rule'),
-        ('R', 'Resident'),
-        ('O', 'Other')
-    )
+    # GENDER_CHOICES = (
+    #     ('M', 'Male'),
+    #     ('F', 'Female'),
+    #     ('O', 'Other')
+    # )
+    # MARITAL_STATUS_CHOICES = (
+    #     ('S', 'Single'),
+    #     ('M', 'Married'),
+    #     ('D', 'Divorced'),
+    #     ('W', 'Widowed'),
+    #     ('O', 'Other')
+    # )
+    # RESIDENCY_STATUS_CHOICES = (
+    #     ('RD', 'Residency Permit'),
+    #     ('RR', 'Residency Rule'),
+    #     ('R', 'Resident'),
+    #     ('O', 'Other')
+    # )
     
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='personal_information')
-    gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
-    year_of_birth = models.CharField(max_length=4)
-    marital_status = models.CharField(max_length=1, choices=MARITAL_STATUS_CHOICES)
+    # gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
+    gender = models.CharField(max_length=100)
+    # year_of_birth = models.CharField(max_length=4)
+    # marital_status = models.CharField(max_length=1, choices=MARITAL_STATUS_CHOICES)
+    marital_status = models.CharField(max_length=100)
     nationality = models.CharField(max_length=255)
     height = models.CharField(max_length=10)
     weight = models.CharField(max_length=10)
@@ -51,7 +53,8 @@ class PersonalInformation(models.Model):
     company_name = models.CharField(max_length=255)
     city = models.CharField(max_length=255)
     country = models.CharField(max_length=255)
-    residency_status = models.CharField(max_length=2, choices=RESIDENCY_STATUS_CHOICES)
+    # residency_status = models.CharField(max_length=2, choices=RESIDENCY_STATUS_CHOICES)
+    residency_status = models.CharField(max_length=200)
     religion = models.CharField(max_length=255)
     religiousness_scale = models.IntegerField()
     native_language = models.CharField(max_length=255)
