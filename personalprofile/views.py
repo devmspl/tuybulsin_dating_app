@@ -12,7 +12,7 @@ from rest_framework.authentication import TokenAuthentication
 
 from personalprofile.forms import UserPreferenceForm
 from user_management.models import CustomUser
-from .models import ImageUpload, PersonalInformation, Plan
+from .models import ImageUpload, PersonalInformation, Plan, UserPreference
 from .serializers import ImageUploadSerializer, PersonalInformationSerializer, PlanSerializer, UserPreferenceSerializer
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -272,7 +272,8 @@ class SetUserPreferenceAPIView(APIView):
         form = UserPreferenceForm(request.data)
         if form.is_valid():
             amplify_user_id = form.cleaned_data.get('amplify_user_id')
-            age = form.cleaned_data.get('age')
+            age_min = form.cleaned_data.get('age_min')
+            age_max = form.cleaned_data.get('age_max')
             location = form.cleaned_data.get('location')
             education = form.cleaned_data.get('education')
             profession = form.cleaned_data.get('profession')
@@ -286,7 +287,8 @@ class SetUserPreferenceAPIView(APIView):
 
             user_preference_data = {
                 'user': user.id,
-                'age': age,
+                'age_min': age_min,
+                'age_max': age_max,
                 'location': location,
                 'education': education,
                 'profession': profession,
@@ -300,6 +302,69 @@ class SetUserPreferenceAPIView(APIView):
                 return Response(serializer.data, status=201)
             return Response(serializer.errors, status=400)
         return Response(form.errors, status=400)
+    
+class UpdateUserPreferenceAPIView(APIView):
+    @swagger_auto_schema(request_body=UserPreferenceSerializer)
+    def put(self, request):
+        form = UserPreferenceForm(request.data)
+        if form.is_valid():
+            amplify_user_id = form.cleaned_data.get('amplify_user_id')
+            age = form.cleaned_data.get('age')
+            location = form.cleaned_data.get('location')
+            education = form.cleaned_data.get('education')
+            profession = form.cleaned_data.get('profession')
+            height = form.cleaned_data.get('height')
+            weight = form.cleaned_data.get('weight')
+
+            try:
+                user = CustomUser.objects.get(amplify_user_id=amplify_user_id)
+            except CustomUser.DoesNotExist:
+                return Response({"error": "User not found"}, status=404)
+
+            user_preference, created = UserPreference.objects.get_or_create(user=user)
+            user_preference.age = age
+            user_preference.location = location
+            user_preference.education = education
+            user_preference.profession = profession
+            user_preference.height = height
+            user_preference.weight = weight
+            user_preference.save()
+
+            serializer = UserPreferenceSerializer(user_preference)
+            return Response(serializer.data, status=200)
+        return Response(form.errors, status=400)
+    
+class GetUserPreferenceAPIView(APIView):
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('user_id', openapi.IN_QUERY, description='User ID', type=openapi.TYPE_INTEGER),
+            openapi.Parameter('amplify_user_id', openapi.IN_QUERY, description='Amplify User ID', type=openapi.TYPE_STRING),
+        ]
+    )
+    def get(self, request):
+        user_id = request.query_params.get('user_id')
+        amplify_user_id = request.query_params.get('amplify_user_id')
+
+        if user_id:
+            try:
+                user = CustomUser.objects.get(id=user_id)
+            except CustomUser.DoesNotExist:
+                return Response({"error": "User not found"}, status=404)
+        elif amplify_user_id:
+            try:
+                user = CustomUser.objects.get(amplify_user_id=amplify_user_id)
+            except CustomUser.DoesNotExist:
+                return Response({"error": "User not found"}, status=404)
+        else:
+            return Response({"error": "Please provide user_id or amplify_user_id"}, status=400)
+
+        try:
+            user_preference = UserPreference.objects.get(user=user)
+        except UserPreference.DoesNotExist:
+            return Response({"error": "User preference not found"}, status=404)
+
+        serializer = UserPreferenceSerializer(user_preference)
+        return Response(serializer.data, status=200)
 
 class PlanAPIView(APIView):
     @swagger_auto_schema(
