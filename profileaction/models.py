@@ -14,4 +14,4 @@ class LikeDislike(models.Model):
         unique_together = ('user', 'profile')
 
     def __str__(self):
-        return f"this profile {self.user} {self.liked} liked {self.profile}"
+        return str(f"this user {self.user.id} like this profile {self.profile.user.id}")

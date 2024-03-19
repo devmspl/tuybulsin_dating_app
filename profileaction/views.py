@@ -1,3 +1,4 @@
+import random
 from django.shortcuts import render
 
 # Create your views here.
@@ -61,3 +62,17 @@ class LikedProfilesAPIView(APIView):
 
         serializer = PersonalInformationSerializer(liked_profiles, many=True)
         return Response(serializer.data, status=200)
+    
+
+class RandomProfileView(APIView):
+    authentication_classes = [TokenAuthentication]
+ 
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        profiles = PersonalInformation.objects.all()
+        if profiles.exists():
+            profile = random.choice(profiles)
+            serializer = PersonalInformationSerializer(profile)
+            return Response({'message':'profile selected','data':serializer.data,'success_status':'true'})
+        else:
+            return Response({"message": "No profiles available",'success_status':'false'}, status=404)

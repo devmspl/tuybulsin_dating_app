@@ -67,11 +67,15 @@ class PersonalInformation(models.Model):
     native_language = models.CharField(max_length=255)
     other_languages = models.CharField(max_length=255)
     other_skills = models.TextField()
+    smoking = models.BooleanField(default=False)
+    drinking = models.BooleanField(default = False)
+    phone_number = models.CharField(max_length = 20, null=True,blank=True)
+    
     # plan = models.ForeignKey(Plan, on_delete=models.SET_DEFAULT, default=Plan.objects.get(name='basic'))
     plan = models.ForeignKey('Plan', on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
-        return self.first_name
+        return str(f"{self.first_name},{self.user.id},{self.user.email}")
     
     
 class ImageUpload(models.Model):
