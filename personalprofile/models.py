@@ -71,7 +71,7 @@ class PersonalInformation(models.Model):
     plan = models.ForeignKey('Plan', on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
-        return self.user_id.email
+        return self.user_id
     
     
 class ImageUpload(models.Model):
