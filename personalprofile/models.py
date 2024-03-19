@@ -25,6 +25,7 @@ class PersonalInformation(models.Model):
     # GENDER_CHOICES = (
     #     ('M', 'Male'),
     #     ('F', 'Female'),
+    # 
     #     ('O', 'Other')
     # )
     # MARITAL_STATUS_CHOICES = (
@@ -35,13 +36,14 @@ class PersonalInformation(models.Model):
     #     ('O', 'Other')
     # )
     # RESIDENCY_STATUS_CHOICES = (
+
     #     ('RD', 'Residency Permit'),
     #     ('RR', 'Residency Rule'),
     #     ('R', 'Resident'),
     #     ('O', 'Other')
     # )
     
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='personal_information')
+    user_id = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='personal_information')
     # gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
     first_name = models.CharField(max_length = 200,blank=True,null=True)
     last_name = models.CharField(max_length = 200,blank=True,null=True)
@@ -69,7 +71,7 @@ class PersonalInformation(models.Model):
     plan = models.ForeignKey('Plan', on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
-        return self.user.email
+        return self.user_id.email
     
     
 class ImageUpload(models.Model):

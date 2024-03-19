@@ -36,8 +36,8 @@ class ProfileCreateAPIView(APIView):
         serializer = PersonalInformationSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message':'profile created successfully!!!','data':serializer.data,'success_status':'true'}, status=status.HTTP_201_CREATED)
+        return Response({'meaasge':serializer.errors,'success_status':'false'},status=status.HTTP_400_BAD_REQUEST)
 
 
 class ProfileRetrieveAPIView(APIView):
@@ -64,16 +64,20 @@ class ProfileRetrieveAPIView(APIView):
             user = CustomUser.objects.get(id=pk)
             print('user',user)
         except CustomUser.DoesNotExist:
-            return Response({'message': 'Profile not found'}, status=status.HTTP_404_NOT_FOUND)
+            error_data = {'message': 'profile not found','success_status':'false'}
+            return Response({'message': 'profile not found','success_status':'false'}, status=status.HTTP_404_NOT_FOUND)
         try:
             # profile = get_object_or_404(PersonalInformation,user=user)
             profile = PersonalInformation.objects.get(user_id=user.id)
-            print('profile', profile)
+            
+            # print('profile', profile)
         except PersonalInformation.DoesNotExist:
-            return Response({'message': 'Profile not found'}, status=status.HTTP_404_NOT_FOUND)
+           
+            return Response({'message': 'profile not found','success_status':'false'}, status=status.HTTP_404_NOT_FOUND)
 
         serializer = PersonalInformationSerializer(profile)
-        return Response({'profile':serializer.data}, status=status.HTTP_200_OK)
+        print(serializer)
+        return Response({'message':'profile retrieve successfully','data':serializer.data,'success_status':'true'}, status=status.HTTP_200_OK)
     
 
 
@@ -120,14 +124,14 @@ class ProfileUpdateAPIView(APIView):
         try:
             profile = request.user.personal_information
         except PersonalInformation.DoesNotExist:
-            return Response({"error": "Profile does not exist"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "Profile does not exist",'success_status':'false'}, status=status.HTTP_404_NOT_FOUND)
 
         # Update the profile
         serializer = PersonalInformationSerializer(profile, data=request_data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message':'profile updated successfully!!!','data':serializer.data,'success_status':'true'}, status=status.HTTP_200_OK)
+        return Response({'message':'an error occurred', 'error':serializer.errors,'success_status':'false'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ImageUploadAPIView(APIView):
@@ -325,8 +329,8 @@ class SetUserPreferenceAPIView(APIView):
         serializer = UserPreferenceSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message':'prefrence is created','data':serializer.data,'success_status':'true'}, status=status.HTTP_201_CREATED)
+        return Response({'message':serializer.errors,'success_status':'false'}, status=status.HTTP_400_BAD_REQUEST)
 
 class UserPreferenceAPIView(APIView):
     @swagger_auto_schema(
