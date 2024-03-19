@@ -43,7 +43,7 @@ class PersonalInformation(models.Model):
     #     ('O', 'Other')
     # )
     
-    user_id = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='personal_information')
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='personal_information')
     # gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
     first_name = models.CharField(max_length = 200,blank=True,null=True)
     last_name = models.CharField(max_length = 200,blank=True,null=True)
