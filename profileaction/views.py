@@ -29,7 +29,18 @@ class LikeProfileAPIView(APIView):
         return Response({"message": "Profile liked successfully."}, status=200)
 
 
-
+class LikedProfileByUserId(APIView):
+    def get(self, request, user_id):
+        likes = LikeDislike.objects.filter(user_id=user_id, liked=True)
+        serializer = LikeDislikeSerializer(likes, many=True)
+        return Response(serializer.data)
+    
+    
+class LikedProfileByProfileId(APIView):
+    def get(self, request, profile_id):
+        likes = LikeDislike.objects.filter(profile_id=profile_id, liked=True)
+        serializer = LikeDislikeSerializer(likes, many=True)
+        return Response(serializer.data)
 
 
 
