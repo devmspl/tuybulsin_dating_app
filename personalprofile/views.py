@@ -1,5 +1,6 @@
+from django.conf import settings
 from django.shortcuts import get_object_or_404, render
-
+from django.core.files.storage import FileSystemStorage
 # Create your views here.
 from django.shortcuts import render
 
@@ -150,14 +151,27 @@ class ImageUploadAPIView(APIView):
         operation_id='uploadImage'
     )
     def post(self, request, format=None):
-        serializer = ImageUploadSerializer(data=request.data)
-        if serializer.is_valid():
-            image = serializer.validated_data['image']
-            # Get the PersonalInformation instance associated with the authenticated user
-            personal_info = PersonalInformation.objects.get(user=request.user)
-            ImageUpload.objects.create(personal_info=personal_info, image=image)
-            return Response({"message": "Image uploaded successfully."}, status=200)
-        return Response(serializer.errors, status=400)
+
+            if settings.USE_S3:
+                user = request.user
+                print(user.id)
+                personal_info = PersonalInformation.objects.get(user=user.id)
+                image_file = request.FILES['image']
+                upload = ImageUpload(personal_info=personal_info,image=image_file)
+                upload.save()
+                image_url = upload.image.url
+                print('image_url',image_url)
+                return Response({"message": "Image uploaded successfully.",'data':image_url,'success_status':'true'}, status=200)
+            else:
+
+                serializer = ImageUploadSerializer(data=request.data)
+                if serializer.is_valid():
+                    image = serializer.validated_data['image']
+                    # Get the PersonalInformation instance associated with the authenticated user
+                    personal_info = PersonalInformation.objects.get(user=request.user)
+                    ImageUpload.objects.create(personal_info=personal_info, image=image)
+                    return Response({"message": "Image uploaded successfully.",'success_status':'true'}, status=200)
+            return Response(serializer.errors, status=400)
     
 
 # class PersonalInformationFilterAPIView(APIView):

@@ -19,6 +19,7 @@ class LikeProfileAPIView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
+
     def post(self, request, pk, format=None):
         profile = PersonalInformation.objects.get(pk=pk)
         like, created = LikeDislike.objects.get_or_create(user=request.user, profile=profile)
@@ -26,6 +27,7 @@ class LikeProfileAPIView(APIView):
             like.liked = True
             like.save()
         return Response({"message": "Profile liked successfully."}, status=200)
+
 
 
 
@@ -45,6 +47,8 @@ class DislikeProfileAPIView(APIView):
 class LikedProfilesAPIView(APIView):
     authentication_classes = [TokenAuthentication]
  
+
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):

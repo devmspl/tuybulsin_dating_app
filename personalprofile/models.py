@@ -80,7 +80,8 @@ class PersonalInformation(models.Model):
     
 class ImageUpload(models.Model):
     personal_info = models.ForeignKey(PersonalInformation, on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to='images/')
+    image = models.ImageField(upload_to='media/')
+    uploaded_at = models.DateTimeField(auto_now_add=True,null =True)
 
     def __str__(self):
         return self.personal_info.user.first_name + " - " + str(self.id)
