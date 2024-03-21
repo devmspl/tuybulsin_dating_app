@@ -13,6 +13,7 @@ class Plan(models.Model):
         (PREMIUM, 'Premium'),
     ]
     name = models.CharField(max_length=20, choices=PLAN_CHOICES, default=BASIC)
+    price = models.CharField(max_length =20000,default=0)
     features1 = models.TextField()
     features2 = models.TextField()
     features3 = models.TextField()

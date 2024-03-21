@@ -1,6 +1,6 @@
 from django import views
 from django.urls import path
-from .views import GetUserPreferenceAPIView, ImageUploadAPIView, PlanAPIView, ProfileCreateAPIView, ProfileRetrieveAPIView, ProfileUpdateAPIView, SetUserPreferenceAPIView, UpdateUserPreferenceAPIView
+from .views import CancelPlanView, GetUserPreferenceAPIView, ImageUploadAPIView, PlanAPIView, ProfileCreateAPIView, ProfileRetrieveAPIView, ProfileUpdateAPIView, PurchasePlanView, SetUserPreferenceAPIView, UpdateUserPreferenceAPIView
 
 urlpatterns = [
     path('create/', ProfileCreateAPIView.as_view(), name='profile_create'),
@@ -11,5 +11,7 @@ urlpatterns = [
     path('updatepreference/', UpdateUserPreferenceAPIView.as_view(), name='update_preference'),
     path('getpreference/', GetUserPreferenceAPIView.as_view(), name='get_preference'),
     path('api/plan/<int:user_id>/', PlanAPIView.as_view(), name='plan'),
-    
+    path('purchase/<int:user_id>/<int:plan_id>/', PurchasePlanView.as_view(), name='purchase-plan'),
+    path('cancel/<int:user_id>/<int:plan_id>/', CancelPlanView.as_view(), name='cancel-plan'),
 ]
+    

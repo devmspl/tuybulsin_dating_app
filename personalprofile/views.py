@@ -1,9 +1,10 @@
 from django.conf import settings
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.core.files.storage import FileSystemStorage
 # Create your views here.
 from django.shortcuts import render
-
+import stripe
 # Create your views here.
 from rest_framework import status
 from rest_framework.views import APIView
@@ -480,3 +481,38 @@ class PlanAPIView(APIView):
         profile.save()
         serializer = PlanSerializer(profile.plan)
         return Response(serializer.data)
+    
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
+
+class PurchasePlanView(APIView):
+    def post(self, request, user_id, plan_id):
+        try:
+            plan = Plan.objects.get(id=plan_id)
+        except Plan.DoesNotExist:
+            return JsonResponse({'error': 'Plan not found'}, status=404)
+
+        # Create a PaymentIntent
+        payment_intent = stripe.PaymentIntent.create(
+            amount=1000,  # Replace with the actual amount in cents
+            currency='usd',
+            payment_method_types=['card']
+        )
+
+        # Return PaymentIntent and plan information
+        return JsonResponse({
+            'payment_intent': payment_intent.client_secret,
+            'price': plan.price,  # You need to add a price field to your Plan model
+            'plan': {
+                'id': plan.id,
+                'name': plan.name,
+                'features1': plan.features1,
+                'features2': plan.features2,
+                'features3': plan.features3
+            }
+        })
+
+class CancelPlanView(APIView):
+    def post(self, request, user_id, plan_id):
+        # Cancel the plan logic here
+        return JsonResponse({'message': 'Plan canceled'})
