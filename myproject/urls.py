@@ -22,6 +22,7 @@ from django.conf.urls.static import static
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
+
 schema_view = get_schema_view(
     openapi.Info(
         title="Dating API",
@@ -42,7 +43,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('user/', include('user_management.urls')),
     path('profile/',include('personalprofile.urls')),
-    path('profileaction/',include('profileaction.urls'))
+    path('profileaction/',include('profileaction.urls')),
+    path('conversations/', include('chat.urls')),  # new
+   
       # Path to your schema.yaml file
 
 ]

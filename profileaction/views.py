@@ -47,7 +47,7 @@ class LikedProfileByUserId(APIView):
             lst.append(profile)
        
 
-        print('profile-liked',PersonalInformation.objects.get(id = id))
+        # print('profile-liked',PersonalInformation.objects.get(id = id))
         return Response({'message':'liked profiles get successfully','data':lst,'success_status':'true'},status=200)
     
 

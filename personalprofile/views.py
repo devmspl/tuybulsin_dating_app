@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.http import JsonResponse
+from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.core.files.storage import FileSystemStorage
 # Create your views here.
@@ -21,6 +21,8 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework.parsers import MultiPartParser, FormParser
 from .models import PersonalInformation
 from .serializers import PersonalInformationSerializer
+
+
 
 class ProfileCreateAPIView(APIView):
     authentication_classes = [TokenAuthentication]
@@ -494,7 +496,7 @@ class PurchasePlanView(APIView):
 
         # Create a PaymentIntent
         payment_intent = stripe.PaymentIntent.create(
-            amount=1000,  # Replace with the actual amount in cents
+            amount=10000,  # Replace with the actual amount in cents
             currency='usd',
             payment_method_types=['card']
         )
@@ -514,5 +516,15 @@ class PurchasePlanView(APIView):
 
 class CancelPlanView(APIView):
     def post(self, request, user_id, plan_id):
-        # Cancel the plan logic here
+        try:
+            user_plan = Plan.objects.get(user_id=user_id, plan_id=plan_id, active=True)
+        except Plan.DoesNotExist:
+            raise Http404('User plan not found or already canceled')
+
+        # Update the user plan to mark it as canceled
+        user_plan.active = False
+        user_plan.save()
+
         return JsonResponse({'message': 'Plan canceled'})
+    
+
