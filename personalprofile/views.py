@@ -80,8 +80,10 @@ class ProfileRetrieveAPIView(APIView):
             return Response({'message': 'profile not found','success_status':'false'}, status=status.HTTP_404_NOT_FOUND)
 
         serializer = PersonalInformationSerializer(profile)
+        data = serializer.data
+        data['image'] = profile.images.first().image.url if profile.images.first() else None
         print(serializer)
-        return Response({'message':'profile retrieve successfully','data':serializer.data,'success_status':'true'}, status=status.HTTP_200_OK)
+        return Response({'message':'profile retrieve successfully','data':data,'success_status':'true'}, status=status.HTTP_200_OK)
     
 
 
