@@ -44,7 +44,7 @@ urlpatterns = [
     path('user/', include('user_management.urls')),
     path('profile/',include('personalprofile.urls')),
     path('profileaction/',include('profileaction.urls')),
-    path('conversations/', include('chat.urls')),  # new
+     # new
    
       # Path to your schema.yaml file
 

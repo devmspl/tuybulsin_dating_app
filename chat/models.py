@@ -1,18 +1,23 @@
 from django.conf import settings
 from django.db import models
 
-# Create your models here.
+from shortuuidfield import ShortUUIDField
 
 
-class Message(models.Model):
-    sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,related_name='message_sender',default=None)
-    message = models.CharField(max_length=2000, blank=True,null=True)
-    attachment = models.FileField(blank=True)
-    recipient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='receiver',default=None)
-    timestamp = models.DateTimeField(auto_now_add=True)
+class ChatRoom(models.Model):
+	roomId = ShortUUIDField()
+	type = models.CharField(max_length=10, default='DM')
+	member = models.ManyToManyField(settings.AUTH_USER_MODEL,)
+	name = models.CharField(max_length=20, null=True, blank=True)
 
-    class Meta:
-        ordering = ('-timestamp',)
+	def __str__(self):
+		return self.roomId + ' -> ' + str(self.name)
 
-    def __str__(self):
-        return f"From {self.sender} to {self.recipient}: {self.message}"
+class ChatMessage(models.Model):
+	chat = models.ForeignKey(ChatRoom, on_delete=models.SET_NULL, null=True)
+	user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+	message = models.CharField(max_length=255)
+	timestamp = models.DateTimeField(auto_now_add=True)
+
+	def __str__(self):
+		return self.message

@@ -1,17 +1,18 @@
-# from channels.routing import ProtocolTypeRouter,URLRouter
-# from channels.auth import AuthMiddlewareStack
-# from channels.security.websocket import AllowedHostsOriginValidator
-# from django.urls import path
-# from chat import consumers
-# import chat.routing
-# from channels.http import AsgiHandler
-# from django.core.asgi import get_asgi_application
+# routing.py
+from channels.routing import ProtocolTypeRouter, URLRouter
+from channels.auth import AuthMiddlewareStack
+from django.urls import path
+from chat.consumers import ChatConsumer
+from django.core.asgi import get_asgi_application
+websocket_urlpatterns = [
+    path('ws/chat/', ChatConsumer.as_asgi()),
+]
 
-# application = ProtocolTypeRouter(
-#     {
-#         "http": AsgiHandler(),
-#         "websocket": AllowedHostsOriginValidator(
-#             AuthMiddlewareStack(URLRouter(chat.routing.websocket_urlpatterns))
-#         ),
-#     }
-# )
+application = ProtocolTypeRouter({
+    "http": get_asgi_application,
+    'websocket': AuthMiddlewareStack(
+        URLRouter(
+            websocket_urlpatterns
+        )
+    ),
+})
