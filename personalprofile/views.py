@@ -161,12 +161,14 @@ class ImageUploadAPIView(APIView):
                 user = request.user
                 print(user.id)
                 personal_info = PersonalInformation.objects.get(user=user.id)
-                image_file = request.FILES['image']
-                upload = ImageUpload(personal_info=personal_info,image=image_file)
-                upload.save()
-                image_url = upload.image.url
-                print('image_url',image_url)
-                return Response({"message": "Image uploaded successfully.",'data':image_url,'success_status':'true'}, status=200)
+                image_files = request.FILES.getlist('image')
+                image_urls = []
+                for image_file in image_files:
+                    upload = ImageUpload(personal_info=personal_info,image=image_file)
+                    upload.save()
+                    image_urls.append(upload.image.url)
+                print('image_url',image_urls)
+                return Response({"message": "Image uploaded successfully.",'data':image_urls,'success_status':'true'}, status=200)
             else:
 
                 serializer = ImageUploadSerializer(data=request.data)
