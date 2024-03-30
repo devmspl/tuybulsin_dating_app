@@ -44,11 +44,9 @@ urlpatterns = [
     path('user/', include('user_management.urls')),
     path('profile/',include('personalprofile.urls')),
     path('profileaction/',include('profileaction.urls')),
-     # new
-   
-      # Path to your schema.yaml file
-
+    path('conversation/', include('chat.urls')),
 ]
+     
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 

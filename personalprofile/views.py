@@ -80,9 +80,10 @@ class ProfileRetrieveAPIView(APIView):
             return Response({'message': 'profile not found','success_status':'false'}, status=status.HTTP_404_NOT_FOUND)
 
         serializer = PersonalInformationSerializer(profile)
+        print(serializer.data)
         data = serializer.data
         data['image'] = profile.images.first().image.url if profile.images.first() else None
-        print(serializer)
+        
         return Response({'message':'profile retrieve successfully','data':data,'success_status':'true'}, status=status.HTTP_200_OK)
     
 
@@ -156,7 +157,6 @@ class ImageUploadAPIView(APIView):
         operation_id='uploadImage'
     )
     def post(self, request, format=None):
-
             if settings.USE_S3:
                 user = request.user
                 print(user.id)
@@ -400,6 +400,7 @@ class UpdateUserPreferenceAPIView(APIView):
             user_preference.height = height
             user_preference.weight = weight
             user_preference.save()
+            
 
             serializer = UserPreferenceSerializer(user_preference)
             return Response(serializer.data, status=200)

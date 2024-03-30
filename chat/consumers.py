@@ -232,6 +232,12 @@ from chat.models import ChatRoom, ChatMessage
 from user_management.models import CustomUser, OnlineUser
 
 class ChatConsumer(AsyncWebsocketConsumer):
+
+	def create_chat_room(self, user_id, first_name, last_name):
+        # Logic to create a chat room
+		chat_room = ChatRoom.objects.create(type="SELF",name=f"{first_name} {last_name}")
+		chat_room.member.add(user_id)
+
 	def getUser(self, userId):
 		return CustomUser.objects.get(id=userId)
 
@@ -262,7 +268,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			'user': userId,
 			'roomId': roomId,
 			'message': message,
-			'userImage': userObj.image.url,
+			#'userImage': userObj.image.url,
 			'userName': userObj.first_name + " " + userObj.last_name,
 			'timestamp': str(chatMessageObj.timestamp)
 		}

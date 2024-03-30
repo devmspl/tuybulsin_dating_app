@@ -18,14 +18,19 @@ class PersonalInformationSerializer(serializers.ModelSerializer):
     # profile = serializers.CharField(source='user_id')
     # user_id = serializers.PrimaryKeyRelatedField(
     #     source='user',  # Use 'custom_user' field from PersonalInformation model
-    #     queryset=CustomUser.objects.all(),
+    #  
+       #queryset=CustomUser.objects.all(),
     #     validators=[UniqueValidator(queryset=PersonalInformation.objects.all())]
     # )
-    images = serializers.ImageField(source='images.first().image', read_only=True)
+    # images = serializers.ImageField(source='images.first().image', read_only=True)
+    images = serializers.SerializerMethodField()
     
+    # class Meta:
+    #     model = PersonalInformation
+    #     fields = '__all__'
     class Meta:
         model = PersonalInformation
-        fields = '__all__'
+        fields = ('id', 'first_name', 'last_name', 'location', 'gender', 'year_of_birth', 'marital_status', 'nationality', 'height', 'weight', 'education', 'job_title', 'company_name', 'city', 'country', 'residency_status', 'religion', 'religiousness_scale', 'native_language', 'other_languages', 'other_skills', 'smoking', 'drinking', 'phone_number', 'user', 'plan', 'images')
 
     # def create(self, validated_data):
     #     user = self.context['request'].user
@@ -53,6 +58,7 @@ class ImageUploadSerializer(serializers.Serializer):
     # def get_image_url(self, obj):
     #     s3_client = boto3.client('s3')
     #     try:
+    
     #         # Generate a pre-signed URL for the image
     #         url = s3_client.generate_presigned_url(
     #             'get_object',

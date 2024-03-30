@@ -1,4 +1,4 @@
-from django.conf import settings
+from user_management.models import CustomUser as User
 from django.db import models
 
 from shortuuidfield import ShortUUIDField
@@ -7,7 +7,7 @@ from shortuuidfield import ShortUUIDField
 class ChatRoom(models.Model):
 	roomId = ShortUUIDField()
 	type = models.CharField(max_length=10, default='DM')
-	member = models.ManyToManyField(settings.AUTH_USER_MODEL,)
+	member = models.ManyToManyField(User)
 	name = models.CharField(max_length=20, null=True, blank=True)
 
 	def __str__(self):
@@ -15,7 +15,7 @@ class ChatRoom(models.Model):
 
 class ChatMessage(models.Model):
 	chat = models.ForeignKey(ChatRoom, on_delete=models.SET_NULL, null=True)
-	user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+	user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 	message = models.CharField(max_length=255)
 	timestamp = models.DateTimeField(auto_now_add=True)
 

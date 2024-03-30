@@ -1,43 +1,30 @@
-from user_management.models import CustomUser
 from rest_framework import serializers
+from chat.models import ChatRoom, ChatMessage
+from user_management.serializers import CustomUserSerializer
 
-from .models import  Message
-from rest_framework import serializers
+class ChatRoomSerializer(serializers.ModelSerializer):
+	member = CustomUserSerializer(many=True, read_only=True)
+	members = serializers.ListField(write_only=True)
 
+	def create(self, validatedData):
+		memberObject = validatedData.pop('members')
+		chatRoom = ChatRoom.objects.create(**validatedData)
+		chatRoom.member.set(memberObject)
+		return chatRoom
 
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CustomUser
-        fields = ['username']
+	class Meta:
+		model = ChatRoom
+		exclude = ['id']
 
+class ChatMessageSerializer(serializers.ModelSerializer):
+	userName = serializers.SerializerMethodField()
+	userImage = serializers.ImageField(source='user.image')
 
+	class Meta:
+		model = ChatMessage
+		exclude = ['id', 'chat']
 
-
-class MessageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Message
-      
-
-
-# class ConversationListSerializer(serializers.ModelSerializer):
-  
-
-#     initiator = UserSerializer()
-#     receiver = UserSerializer()
-
-#     last_message = serializers.SerializerMethodField()
-
-#     class Meta:
-
-#         model = Conversation
-#         fields = ['initiator', 'receiver', 'last_message']
-
-
-
-
-#     def get_last_message(self, instance):
-#         message = instance.message_set.first()
-#         return MessageSerializer(instance=message)
-
+	def get_userName(self, Obj):
+		return Obj.user.first_name + ' ' + Obj.user.last_name
 
 
