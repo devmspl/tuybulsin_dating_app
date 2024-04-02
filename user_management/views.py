@@ -18,6 +18,8 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import authenticate, login
 from rest_framework.parsers import FileUploadParser
+from django.db.models import Q
+
 
 
 
@@ -90,6 +92,7 @@ class LoginAPIView(ObtainAuthToken):
             properties={
                 'email': openapi.Schema(type=openapi.TYPE_STRING),
                 'amplify_user_id': openapi.Schema(type=openapi.TYPE_STRING),
+                'phonenumber': openapi.Schema(type=openapi.TYPE_INTEGER),
             },
             required=['amplify_user_id']
         ),
@@ -104,10 +107,22 @@ class LoginAPIView(ObtainAuthToken):
        
         amplify_user_id = request.data.get('amplify_user_id')
         email = request.data.get('email')
+        phonenumber = request.data.get('phonenumber')
+
        
         # Check if a user with the given amplify_user_id exists
         try:
-            user = CustomUser.objects.get(amplify_user_id=amplify_user_id,username = email)
+            if isinstance(email, str) and email !="string":
+                user = CustomUser.objects.get(username=email, amplify_user_id=amplify_user_id)
+            else:
+                 user = CustomUser.objects.get(phonenumber=phonenumber, amplify_user_id=amplify_user_id)
+           
+                # user = CustomUser.objects.filter(Q(username=email) | Q(phonenumber=int(email)), amplify_user_id=amplify_user_id).first()
+          
+                # user = CustomUser.objects.filter(Q(username=email) | Q(phonenumber=int(email)), amplify_user_id=amplify_user_id).first()
+
+
+            # user = CustomUser.objects.get(amplify_user_id=amplify_user_id,username = email)
              
         except CustomUser.DoesNotExist:
             user = CustomUser.objects.create_user(amplify_user_id=amplify_user_id,email = email,username = email)
