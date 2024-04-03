@@ -19,6 +19,8 @@ from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import authenticate, login
 from rest_framework.parsers import FileUploadParser
 from django.db.models import Q
+import random
+import string
 
 
 
@@ -107,16 +109,19 @@ class LoginAPIView(ObtainAuthToken):
        
         amplify_user_id = request.data.get('amplify_user_id')
         email = request.data.get('email')
+        print('email',email)
         phonenumber = request.data.get('phonenumber')
+        print('phonenumber===>>>',phonenumber)
 
        
         # Check if a user with the given amplify_user_id exists
         try:
-            if isinstance(email, str) and email !="string":
+            if email and isinstance(email, str):
                 user = CustomUser.objects.get(username=email, amplify_user_id=amplify_user_id)
-            else:
+                # print('1 ==>>>',user)
+            elif phonenumber and email ==None:
                  user = CustomUser.objects.get(phonenumber=phonenumber, amplify_user_id=amplify_user_id)
-           
+                #  print('2 ==>>>',user)
                 # user = CustomUser.objects.filter(Q(username=email) | Q(phonenumber=int(email)), amplify_user_id=amplify_user_id).first()
           
                 # user = CustomUser.objects.filter(Q(username=email) | Q(phonenumber=int(email)), amplify_user_id=amplify_user_id).first()
@@ -125,8 +130,24 @@ class LoginAPIView(ObtainAuthToken):
             # user = CustomUser.objects.get(amplify_user_id=amplify_user_id,username = email)
              
         except CustomUser.DoesNotExist:
-            user = CustomUser.objects.create_user(amplify_user_id=amplify_user_id,email = email,username = email)
-           
+            if email:
+            # if email and email.strip() != '':
+            #     if CustomUser.objects.filter(email=email).exists():
+            #         return Response({'message': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
+                user = CustomUser.objects.create_user(amplify_user_id=amplify_user_id, email=email, username=email)    
+                # user = CustomUser.objects.create_user(amplify_user_id=amplify_user_id,email = email,username = email)
+                # print('3 ==>>>',user)
+            elif phonenumber:
+            # Generating a random six-word string as username
+                # if CustomUser.objects.filter(phonenumber=phonenumber).exists():
+                #     return Response({'message': 'Phone number already exists'}, status=status.HTTP_400_BAD_REQUEST)
+                random_username = ''.join(random.choices(string.ascii_lowercase, k=6))
+                user = CustomUser.objects.create_user(amplify_user_id=amplify_user_id, phonenumber=phonenumber, username=str(phonenumber))
+            # else:
+            #     return Response({'message': 'Login failed'}, status=status.HTTP_401_UNAUTHORIZED)
+                # user = CustomUser.objects.create_user(amplify_user_id=amplify_user_id, phonenumber=phonenumber, username=phonenumber)
+                # print('4 ==>>>',user)
+
             # return Response({'message': 'User Created Successfully'}, status=status.HTTP_200_OK)
         
         # Authenticate the user

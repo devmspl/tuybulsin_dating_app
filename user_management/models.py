@@ -11,7 +11,7 @@ class CustomUser(AbstractUser):
     image = models.ImageField(upload_to='images/',null=True, blank=True)
     phonenumber = models.IntegerField(null= True , blank = True)
     is_compelet_profile = models.BooleanField(default = False)
-    email = models.CharField(max_length = 300,unique=True)
+    email = models.CharField(max_length = 300,unique=False,null=True, blank=True)
 
     def __str__(self):
         return f' {self.email} ,{str(self.id)}'
@@ -19,6 +19,8 @@ class CustomUser(AbstractUser):
     def save(self, *args, **kwargs):
         if not self.username:
             self.username = self.email
+        elif self.phonenumber:
+            self.username = str(self.phonenumber)
         super().save(*args, **kwargs)
 
 
