@@ -15,6 +15,7 @@
 # class ChatConsumer(WebsocketConsumer):
 #     def connect(self):
 #         print("here")
+
 #         self.room_name = self.scope["url_route"]["kwargs"]["room_name"]
 #         self.room_group_name = f"chat_{self.room_name}"
 
@@ -23,6 +24,7 @@
 #             self.room_group_name, self.channel_name
 #         )
 #         self.accept()
+
 
 #     def disconnect(self, close_code):
 #         # Leave room group
@@ -53,6 +55,7 @@
 #         )
 
 #         conversation = Conversation.objects.get(id=int(self.room_name))
+
 #         if self.scope['user'].is_authenticated:
 #             user_id = self.scope['user'].id
 #             sender = CustomUser.objects.get(id=user_id)
@@ -99,6 +102,7 @@
 #         self.room_group_name = "chat_%s" % self.room_name
 
 #         # Join room group
+
 #         async_to_sync(self.channel_layer.group_add)(
 #             self.room_group_name, self.channel_name
 #         )
@@ -230,8 +234,11 @@ from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 from chat.models import ChatRoom, ChatMessage
 from user_management.models import CustomUser, OnlineUser
-
-class ChatConsumer(AsyncWebsocketConsumer):
+from rest_framework.authtoken.models import Token
+from django.contrib.auth.models import AnonymousUser
+from asgiref.sync import sync_to_async
+from channels.generic.websocket import WebsocketConsumer
+class ChatConsumer(WebsocketConsumer):
 
 	def create_chat_room(self, user_id, first_name, last_name):
         # Logic to create a chat room
@@ -284,21 +291,45 @@ class ChatConsumer(AsyncWebsocketConsumer):
 		}
 		await self.channel_layer.group_send('onlineUser', chatMessage)
 
-	async def connect(self):
-		self.userId = self.scope['url_route']['kwargs']['userId']
-		self.userRooms = await database_sync_to_async(
-			list
-		)(ChatRoom.objects.filter(member=self.userId))
-		for room in self.userRooms:
-			await self.channel_layer.group_add(
-				room.roomId,
-				self.channel_name
-			)
-		await self.channel_layer.group_add('onlineUser', self.channel_name)
-		self.user = await database_sync_to_async(self.getUser)(self.userId)
-		await database_sync_to_async(self.addOnlineUser)(self.user)
-		await self.sendOnlineUserList()
-		await self.accept()
+	def connect(self):
+		headers = self.scope.get('headers', {})
+		if isinstance(headers, list):
+			headers = dict(headers)
+			print('All Headers:', headers)
+		auth_header = headers.get(b'authorization', b'').decode('utf-8')
+		print('auth-hhh',auth_header.split(' '))
+		try:
+			token_key = auth_header.split()[1]  # Extract the token part after 'Token'
+			token = (Token.objects.get)(key=token_key)
+			self.scope['user'] = token.user
+			print('user',token.user)
+		except (IndexError, Token.DoesNotExist):
+        # If token is missing or invalid, set user to anonymous
+			self.scope['user'] = AnonymousUser()
+		# if auth_header:
+		# 	auth_token = auth_header.split(' ')[1]  # Extract the token part after 'Token'
+		# 	print('Authorization Token:', auth_token)
+		# 	token = await Token.objects.get(key=auth_token)
+		# 	print('token',token)
+			
+		# else:
+		# 	print('Authorization Header Not Found')
+		# 	auth_token = None
+
+		# self.userId = self.scope['url_route']['kwargs']['userId']
+		# self.userRooms = await database_sync_to_async(
+		# 	list
+		# )(ChatRoom.objects.filter(member=self.userId))
+		# for room in self.userRooms:
+		# 	await self.channel_layer.group_add(
+		# 		room.roomId,
+		# 		self.channel_name
+		# 	)
+		# await self.channel_layer.group_add('onlineUser', self.channel_name)
+		# self.user = await database_sync_to_async(self.getUser)(self.userId)
+		# await database_sync_to_async(self.addOnlineUser)(self.user)
+		# await self.sendOnlineUserList()
+		self.accept()
 
 	async def disconnect(self, close_code):
 		await database_sync_to_async(self.deleteOnlineUser)(self.user)
