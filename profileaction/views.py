@@ -34,17 +34,26 @@ class LikedProfileByUserId(APIView):
     def get(self, request, user_id):
         likes = LikeDislike.objects.filter(user_id=user_id, liked=True)
         serializer = LikeDislikeSerializer(likes, many=True)
-        # print(serializer.data)
+        print(serializer.data)
         profiles = [item['profile'] for item in serializer.data]
         profile_dict = {}
         lst = []
         for id in profiles:
             user_profiles = PersonalInformation.objects.filter(id = id)
+            serializer = PersonalInformationSerializer(user_profiles[0])
+            profile_data = serializer.data
+            profile_data['images'] = serializer.get_images(user_profiles[0])
+            # print('image',profile_data)
             # print('v',user_profiles.values())
             
-            for profile in user_profiles.values():
+            for profile in user_profiles:
                 print('profile',profile)
-            lst.append(profile)
+                user_profile = PersonalInformation.objects.filter(id=profile.id).first()
+                serializer = PersonalInformationSerializer(user_profile)
+                profile_data = serializer.data
+                profile_data['images'] = serializer.get_images(profile)
+                print('profile',profile_data)
+                lst.append(profile_data)
        
 
         # print('profile-liked',PersonalInformation.objects.get(id = id))
