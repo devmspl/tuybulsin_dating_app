@@ -114,7 +114,12 @@ class RandomProfileView(APIView):
         profiles = PersonalInformation.objects.all()
         if profiles.exists():
             profile = random.choice(profiles)
+            profile_instance = profile.user
+            amplify_user_id = profile_instance.amplify_user_id
             serializer = PersonalInformationSerializer(profile)
-            return Response({'message':'profile selected','data':serializer.data,'success_status':'true'})
+            profile_data = serializer.data
+            profile_data['images'] = serializer.get_images(profile)
+            profile_data['amplify_user_id'] = amplify_user_id
+            return Response({'message':'profile selected','data':profile_data,'success_status':'true'})
         else:
             return Response({"message": "No profiles available",'success_status':'false'}, status=404)
