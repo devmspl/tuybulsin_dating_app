@@ -50,8 +50,11 @@ class LikedProfileByUserId(APIView):
                 print('profile',profile)
                 user_profile = PersonalInformation.objects.filter(id=profile.id).first()
                 serializer = PersonalInformationSerializer(user_profile)
+                profile_instance = user_profile.user
+                amplify_user_id = profile_instance.amplify_user_id
                 profile_data = serializer.data
                 profile_data['images'] = serializer.get_images(profile)
+                profile_data['amplify_user_id'] = amplify_user_id
                 print('profile',profile_data)
                 lst.append(profile_data)
        
