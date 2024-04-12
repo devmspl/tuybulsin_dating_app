@@ -1,13 +1,14 @@
 import random
 from django.shortcuts import render
-
+from django.db.models import Q
 # Create your views here.
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
-from personalprofile.serializers import PersonalInformationSerializer
+from personalprofile.models import UserPreference
+from personalprofile.serializers import PersonalInformationSerializer, UserPreferenceSerializer
 # Create your views here.
 from .models import PersonalInformation, LikeDislike
 from .serializers import LikeDislikeSerializer
@@ -104,14 +105,56 @@ class LikedProfilesAPIView(APIView):
 
         serializer = PersonalInformationSerializer(liked_profiles, many=True)
         return Response(serializer.data, status=200)
-    
+
+# def customfilter(location,education,profession,height,weight,age_min,age_max):
+
+
+
+
 
 class RandomProfileView(APIView):
     authentication_classes = [TokenAuthentication]
  
     permission_classes = [IsAuthenticated]
     def get(self, request):
-        profiles = PersonalInformation.objects.all()
+        user_id = request.user.id
+        user = CustomUser.objects.get(id=user_id)
+        user_preference = UserPreference.objects.get(user_id = user_id)
+        user_prefernce_serializer = UserPreferenceSerializer(user_preference)
+       
+        print("userprefernce", user_prefernce_serializer.data)
+        location = user_prefernce_serializer.data['location']
+        education = user_prefernce_serializer.data['education']
+        profession = user_prefernce_serializer.data['profession']
+        height = user_prefernce_serializer.data['height']
+        weight = user_prefernce_serializer.data['weight']
+        age_min = user_prefernce_serializer.data['age_min']
+        age_max = user_prefernce_serializer.data['age_max']
+        print("location",location)
+
+        filters =  Q(user_preference__location=location)
+        if education:
+                filters &= Q(user_preference__education=education)
+        if profession:
+                filters &= Q(user_preference__profession=profession)
+        if height:
+                filters &= Q(user_preference__height=height)
+        if weight:
+                filters &= Q(user_preference__weight=weight)
+        if age_min:
+                filters &= Q(user_preference__age_min=age_min)
+        if age_max:
+                filters &= Q(user_preference__age_max=age_max)
+        
+        # filter_user_by_prefernce = CustomUser.objects.filter(userpreference__location=location,userpreference__education = education,userpreference__profession = profession, userpreference__height = height , userpreference__weight = weight , userpreference__age_min = age_min , userpreference__max = age_max)
+        filter_user_by_prefernce = CustomUser.objects.filter(filters).exclude(id=user.id)
+
+        print('filter user', filter_user_by_prefernce)
+        profiles = PersonalInformation.objects.filter(user__in=filter_user_by_prefernce)
+        serialized_profiles = PersonalInformationSerializer(instance=profiles, many=True)
+        # serialized_profiles['preference'] =  
+        print("serialized_profiles",serialized_profiles.data)
+        profiles = PersonalInformation.objects.filter()
         if profiles.exists():
             profile = random.choice(profiles)
             profile_instance = profile.user
@@ -120,6 +163,6 @@ class RandomProfileView(APIView):
             profile_data = serializer.data
             profile_data['images'] = serializer.get_images(profile)
             profile_data['amplify_user_id'] = amplify_user_id
-            return Response({'message':'profile selected','data':profile_data,'success_status':'true'})
+            return Response({'message':'profile selected','data': serialized_profiles.data,'success_status':'true'})
         else:
             return Response({"message": "No profiles available",'success_status':'false'}, status=404)

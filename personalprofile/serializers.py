@@ -12,37 +12,46 @@ import boto3
 from botocore.exceptions import ClientError
 
 class PersonalInformationSerializer(serializers.ModelSerializer):
-    # first_name = serializers.CharField(source='user.first_name', read_only=True)
-    # last_name = serializers.CharField(source='user.last_name', read_only=True)
-    # phone_number = serializers.IntegerField(source='user.phonenumber', read_only=True)
-    # profile = serializers.CharField(source='user_id')
-    # user_id = serializers.PrimaryKeyRelatedField(
-    #     source='user',  # Use 'custom_user' field from PersonalInformation model
-    #  
-       #queryset=CustomUser.objects.all(),
-    #     validators=[UniqueValidator(queryset=PersonalInformation.objects.all())]
-    # )
-    # images = serializers.ImageField(source='images.first().image', read_only=True)
+   
     images = serializers.SerializerMethodField()
+    preference = serializers.SerializerMethodField()
+   
+    def get_preference(self, obj):
+        try:
+            custom_user = obj.user
+            user_preferences = custom_user.user_preference.all()
+            preferences = []
+            for user_preference in user_preferences:
+                preferences.append({
+                    'age_min': user_preference.age_min,
+                    'age_max': user_preference.age_max,
+                    'location': user_preference.location,
+                    'education': user_preference.education,
+                    'profession': user_preference.profession,
+                    'height': user_preference.height,
+                    'weight': user_preference.weight,
+                })
+            return preferences
+        except UserPreference.DoesNotExist:
+            return None
+            # user_preference = obj.user_preference.all()
+        #     return {
+        #         'age_min': user_preference.age_min,
+        #         'age_max': user_preference.age_max,
+        #         'location': user_preference.location,
+        #         'education': user_preference.education,
+        #         'profession': user_preference.profession,
+        #         'height': user_preference.height,
+        #         'weight': user_preference.weight,
+        #     }
+        # except UserPreference.DoesNotExist:
+        #     return None
     
-    # class Meta:
-    #     model = PersonalInformation
-    #     fields = '__all__'
     class Meta:
         model = PersonalInformation
-        fields = ('id', 'first_name', 'last_name', 'location', 'gender', 'year_of_birth', 'marital_status', 'nationality', 'height', 'weight', 'education', 'job_title', 'company_name', 'city', 'country', 'residency_status', 'religion', 'religiousness_scale', 'native_language', 'other_languages', 'other_skills', 'smoking', 'drinking', 'phone_number', 'user', 'plan', 'images')
+        fields = ('id', 'first_name', 'last_name', 'location', 'gender', 'year_of_birth', 'marital_status', 'nationality', 'height', 'weight', 'education', 'job_title', 'company_name', 'city', 'country', 'residency_status', 'religion', 'religiousness_scale', 'native_language', 'other_languages', 'other_skills', 'smoking', 'drinking', 'phone_number', 'user', 'plan', 'images','preference')
 
-    # def create(self, validated_data):
-    #     user = self.context['request'].user
-    #     profile_data = {
-    #         'user': user,
-    #         'first_name': user.first_name,
-    #         'last_name': user.last_name,
-    #         'phone_number': user.phonenumber,
-    #         **validated_data
-    #     }
-    #     profile = PersonalInformation.objects.create(**profile_data)
-    #     return profile
+  
     def get_images(self, obj):
         image_uploads = ImageUpload.objects.filter(personal_info=obj)
         return [upload.image.url for upload in image_uploads]
