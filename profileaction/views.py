@@ -163,6 +163,6 @@ class RandomProfileView(APIView):
             profile_data = serializer.data
             profile_data['images'] = serializer.get_images(profile)
             profile_data['amplify_user_id'] = amplify_user_id
-            return Response({'message':'profile selected','data': serialized_profiles.data,'success_status':'true'})
+            return Response({'message':'profile selected','data': profile_data,'success_status':'true'})
         else:
             return Response({"message": "No profiles available",'success_status':'false'}, status=404)
