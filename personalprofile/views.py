@@ -384,7 +384,8 @@ class UpdateUserPreferenceAPIView(APIView):
             amplify_user_id = request.data.get('amplify_user_id')
            # amplify_user_id = form.cleaned_data.get('amplify_user_id')
             print('amplify_id',amplify_user_id)
-            age =  request.data.get('age')
+            age_min =  request.data.get('age_min')
+            age_max =  request.data.get('age_max')
             location =  request.data.get('location')
             education =  request.data.get('education')
             profession =  request.data.get('profession')
@@ -395,7 +396,8 @@ class UpdateUserPreferenceAPIView(APIView):
                 print('user',user)
                 user_preference = UserPreference.objects.get(user=user)
                 print('user prefernece',user_preference)
-                user_preference.age = age
+                user_preference.age_min = age_min
+                user_preference.age_max = age_max
                 user_preference.location = location
                 user_preference.education = education
                 user_preference.profession = profession
