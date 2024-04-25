@@ -377,31 +377,34 @@ class UserPreferenceAPIView(APIView):
 class UpdateUserPreferenceAPIView(APIView):
     @swagger_auto_schema(request_body=UserPreferenceSerializer)
     def put(self, request):
+        # print('request-data',request.data)
+
         form = UserPreferenceForm(request.data)
         if form.is_valid():
-            amplify_user_id = form.cleaned_data.get('amplify_user_id')
-            age = form.cleaned_data.get('age')
-            location = form.cleaned_data.get('location')
-            education = form.cleaned_data.get('education')
-            profession = form.cleaned_data.get('profession')
-            height = form.cleaned_data.get('height')
-            weight = form.cleaned_data.get('weight')
+            amplify_user_id = request.data.get('amplify_user_id')
+           # amplify_user_id = form.cleaned_data.get('amplify_user_id')
+            print('amplify_id',amplify_user_id)
+            age =  request.data.get('age')
+            location =  request.data.get('location')
+            education =  request.data.get('education')
+            profession =  request.data.get('profession')
+            height =  request.data.get('height')
+            weight =  request.data.get('weight')
 
             try:
                 user = CustomUser.objects.get(amplify_user_id=amplify_user_id)
+                print('user',user)
+                user_preference = UserPreference.objects.get(user=user)
+                print('user prefernece',user_preference)
+                user_preference.age = age
+                user_preference.location = location
+                user_preference.education = education
+                user_preference.profession = profession
+                user_preference.height = height
+                user_preference.weight = weight
+                user_preference.save()
             except CustomUser.DoesNotExist:
                 return Response({"error": "User not found"}, status=404)
-
-            user_preference, created = UserPreference.objects.get_or_create(user=user)
-            user_preference.age = age
-            user_preference.location = location
-            user_preference.education = education
-            user_preference.profession = profession
-            user_preference.height = height
-            user_preference.weight = weight
-            user_preference.save()
-            
-
             serializer = UserPreferenceSerializer(user_preference)
             return Response(serializer.data, status=200)
         return Response(form.errors, status=400)
