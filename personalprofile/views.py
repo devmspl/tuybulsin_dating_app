@@ -391,7 +391,7 @@ class UpdateUserPreferenceAPIView(APIView):
             height =  request.data.get('height')
             weight =  request.data.get('weight')
             try:
-                user = CustomUser.objects.get(amplify_user_id=amplify_user_id)
+                user = CustomUser.objects.get(id=request.user.id)
                 print('user',user)
                 user_preference = UserPreference.objects.get(user=user)
                 print('user prefernece',user_preference)
