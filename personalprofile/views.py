@@ -390,7 +390,6 @@ class UpdateUserPreferenceAPIView(APIView):
             profession =  request.data.get('profession')
             height =  request.data.get('height')
             weight =  request.data.get('weight')
-
             try:
                 user = CustomUser.objects.get(amplify_user_id=amplify_user_id)
                 print('user',user)
