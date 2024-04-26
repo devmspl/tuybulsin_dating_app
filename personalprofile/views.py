@@ -1,7 +1,8 @@
+import os
 from django.conf import settings
 from django.http import Http404, JsonResponse
-from django.shortcuts import get_object_or_404, render
-from django.core.files.storage import FileSystemStorage
+from django.shortcuts import get_object_or_404
+
 # Create your views here.
 from django.shortcuts import render
 import stripe
@@ -21,6 +22,11 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework.parsers import MultiPartParser, FormParser
 from .models import PersonalInformation
 from .serializers import PersonalInformationSerializer
+from .models import ImageUpload
+from django.core.files.storage import default_storage
+from storages.backends.s3boto3 import S3Boto3Storage
+from urllib.parse import urlparse
+
 
 
 
@@ -181,154 +187,53 @@ class ImageUploadAPIView(APIView):
             return Response(serializer.errors, status=400)
     
 
-# class PersonalInformationFilterAPIView(APIView):
-#     serializer_class = PersonalInformationSerializer
-#     @swagger_auto_schema(
-#         manual_parameters=[
-#             openapi.Parameter('age', openapi.IN_QUERY, description='Filter by age', type=openapi.TYPE_INTEGER),
-#             openapi.Parameter('location', openapi.IN_QUERY, description='Filter by location', type=openapi.TYPE_STRING),
-#             openapi.Parameter('education', openapi.IN_QUERY, description='Filter by education', type=openapi.TYPE_STRING),
-#             openapi.Parameter('profession', openapi.IN_QUERY, description='Filter by profession', type=openapi.TYPE_STRING),
-#             openapi.Parameter('height', openapi.IN_QUERY, description='Filter by height', type=openapi.TYPE_STRING),
-#             openapi.Parameter('weight', openapi.IN_QUERY, description='Filter by weight', type=openapi.TYPE_STRING),
-#         ]
-#     )
-#     def get(self, request):
-#         queryset = PersonalInformation.objects.all()
-#         age = request.query_params.get('age')
-#         location = request.query_params.get('location')
-#         education = request.query_params.get('education')
-#         profession = request.query_params.get('profession')
-#         height = request.query_params.get('height')
-#         weight = request.query_params.get('weight')
 
-#         if age:
-#             birth_year = 2024 - int(age)  # Assuming current year is 2024
-#             queryset = queryset.filter(year_of_birth=birth_year)
-#         if location:
-#             queryset = queryset.filter(city__icontains=location) | queryset.filter(country__icontains=location)
-#         if education:
-#             queryset = queryset.filter(education__icontains=education)
-#         if profession:
-#             queryset = queryset.filter(job_title__icontains=profession) | queryset.filter(company_name__icontains=profession)
-#         if height:
-#             queryset = queryset.filter(height=height)
-#         if weight:
-#             queryset = queryset.filter(weight=weight)
+import boto3
 
-#         serializer = PersonalInformationSerializer(queryset, many=True)
-#         return Response(serializer.data)
+class ImageDeleteAPIView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
     
+    def delete(self, request):
+       
+        try:
+            print("------------------------------")
+            print('data',request.data)
+            # Get the image URL from the request data
+            s3 = default_storage
+            s3.open('https://eternity-match.s3.us-east-1.amazonaws.com/media/OIG1_1.jpg', 'w')
+            image_url = request.data.get('image_url')
+            print('image',image_url)
+            parsed_url = urlparse(image_url)
+            
+            image_file_name = os.path.basename(parsed_url.path)
+            print('image_file_name',image_file_name)
 
-# class PlanAPIView(APIView):
-#     def get(self, request):
-#         user = request.user
-#         if user.is_authenticated:
-#             profile = PersonalInformation.objects.get(user=user)
-#             serializer = PlanSerializer(profile.plan)
-#             return Response(serializer.data)
-#         else:
-#             return Response({'error': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
+            
+            image = ImageUpload.objects.get(image__icontains=image_file_name)
+            print('image',image)
+            # Check if the user is the owner of the image
+            if image.personal_info.user != request.user:
+                return Response({"message": "You are not authorized to delete this image."}, status=status.HTTP_403_FORBIDDEN)
+            # Delete the image
+            image.delete()
+            # Delete the image file from S3        
+            if settings.USE_S3:
+                storage = S3Boto3Storage()
+                storage.delete(image.image.name)
+                
+                parsed_url = urlparse(image_url)
+                print('parsed_url',parsed_url)
+                storage.delete(parsed_url.path.lstrip('/'))
+                return Response({"message": "Image deleted successfully.", 'success_status': 'true'}, status=status.HTTP_200_OK)
+          
+        except ImageUpload.DoesNotExist:
+            return Response({"message": "Image not found."}, status=status.HTTP_404_NOT_FOUND)
 
-#     def put(self, request):
-#         user = request.user
-#         if user.is_authenticated:
-#             profile = PersonalInformation.objects.get(user=user)
-#             plan_name = request.data.get('plan')
-#             try:
-#                 new_plan = Plan.objects.get(name=plan_name)
-#                 profile.plan = new_plan
-#                 profile.save()
-#                 serializer = PlanSerializer(profile.plan)
-#                 return Response(serializer.data)
-#             except Plan.DoesNotExist:
-#                 return Response({'error': 'Invalid plan'}, status=status.HTTP_400_BAD_REQUEST)
-#         else:
-#             return Response({'error': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
-
-#     def delete(self, request):
-#         user = request.user
-#         if user.is_authenticated:
-#             profile = PersonalInformation.objects.get(user=user)
-#             default_plan = Plan.objects.get(name='basic')
-#             profile.plan = default_plan
-#             profile.save()
-#             serializer = PlanSerializer(profile.plan)
-#             return Response(serializer.data)
-#         else:
-#             return Response({'error': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
-
+        
 
 
-# class SetUserPreferenceAPIView(APIView):
-#     def post(self, request):
-#         amplify_user_id = request.data.get('amplify_user_id')
-#         age = request.data.get('age')
-#         location = request.data.get('location')
-#         education = request.data.get('education')
-#         profession = request.data.get('profession')
-#         height = request.data.get('height')
-#         weight = request.data.get('weight')
 
-#         try:
-#             user = CustomUser.objects.get(amplify_user_id=amplify_user_id)
-#         except CustomUser.DoesNotExist:
-#             return Response({"error": "User not found"}, status=404)
-
-#         user_preference_data = {
-#             'user': user.id,
-#             'age': age,
-#             'location': location,
-#             'education': education,
-#             'profession': profession,
-#             'height': height,
-#             'weight': weight,
-#         }
-
-#         serializer = UserPreferenceSerializer(data=user_preference_data)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data, status=201)
-#         return Response(serializer.errors, status=400)
-
-# class SetUserPreferenceAPIView(APIView):
-#     @swagger_auto_schema(request_body=UserPreferenceSerializer)
-#     def post(self, request):
-#         form = UserPreferenceForm(request.data)
-#         if form.is_valid():
-#             user_id = request.user.id
-#             print('user',user_id)
-
-#             age_min = form.cleaned_data.get('age_min')
-#             age_max = form.cleaned_data.get('age_max')
-#             location = form.cleaned_data.get('location')
-#             education = form.cleaned_data.get('education')
-#             profession = form.cleaned_data.get('profession')
-#             height = form.cleaned_data.get('height')
-#             weight = form.cleaned_data.get('weight')
-
-#             try:
-#                 user = CustomUser.objects.get(id=user_id)
-#             except CustomUser.DoesNotExist:
-#                 return Response({"error": "User not found"}, status=404)
-
-#             user_preference_data = {
-#                 'user': user.id,
-#                 'age_min': age_min,
-#                 'age_max': age_max,
-#                 'location': location,
-#                 'education': education,
-#                 'profession': profession,
-#                 'height': height,
-#                 'weight': weight,
-#             }
-
-#             serializer = UserPreferenceSerializer(data=user_preference_data)
-#             if serializer.is_valid():
-#                 serializer.save()
-#                 return Response(serializer.data, status=201)
-#             return Response(serializer.errors, status=400)
-#         return Response(form.errors, status=400)
     
 
 
