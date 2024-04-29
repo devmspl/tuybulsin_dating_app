@@ -185,66 +185,7 @@ class ImageUploadAPIView(APIView):
                     ImageUpload.objects.create(personal_info=personal_info, image=image)
                     return Response({"message": "Image uploaded successfully.",'success_status':'true'}, status=200)
             return Response(serializer.errors, status=400)
-    
 
-
-
-
-class ImageDeleteAPIView(APIView):
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter('image_url', in_=openapi.IN_QUERY, type=openapi.TYPE_STRING, required=True),
-        ],
-        responses={
-            '200': openapi.Response('OK'),
-            '400': 'Bad Request',
-            '403': 'Forbidden',
-            '404': 'Not Found',
-        },
-        operation_id='deleteImage'
-    )
-    
-    def delete(self, request):
-       
-        try:
-            print('data',request.data)
-            # Get the image URL from the request data
-            s3 = default_storage
-            image_url = request.data.get('image_url')
-            print('image',image_url)
-            parsed_url = urlparse(image_url)
-            
-            image_file_name = os.path.basename(parsed_url.path)
-            print('image_file_name',image_file_name)
-
-            
-            image = ImageUpload.objects.get(image__icontains=image_file_name)
-            print('image',image)
-            # Check if the user is the owner of the image
-            if image.personal_info.user != request.user:
-                return Response({"message": "You are not authorized to delete this image."}, status=status.HTTP_403_FORBIDDEN)
-            # Delete the image
-            image.delete()
-            # Delete the image file from S3        
-            if settings.USE_S3:
-                storage = S3Boto3Storage()
-                storage.delete(image.image.name)
-                
-                parsed_url = urlparse(image_url)
-                print('parsed_url',parsed_url)
-                storage.delete(parsed_url.path.lstrip('/'))
-                return Response({"message": "Image deleted successfully.", 'success_status': 'true'}, status=status.HTTP_200_OK)
-          
-        except ImageUpload.DoesNotExist:
-            return Response({"message": "Image not found."}, status=status.HTTP_404_NOT_FOUND)
-
-        
-
-
-
-    
 
 
 class SetUserPreferenceAPIView(APIView):
@@ -452,3 +393,54 @@ class CancelPlanView(APIView):
         return JsonResponse({'message': 'Plan canceled'})
     
 
+
+
+class ImageDeleteAPIView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('image_url', in_=openapi.IN_QUERY, type=openapi.TYPE_STRING, required=True),
+        ],
+        responses={
+            '200': openapi.Response('OK'),
+            '400': 'Bad Request',
+            '403': 'Forbidden',
+            '404': 'Not Found',
+        },
+        operation_id='deleteImage'
+    )
+    
+    def delete(self, request):
+       
+        try:
+            print('data',request.data)
+            # Get the image URL from the request data
+            s3 = default_storage
+            image_url = request.data.get('image_url')
+            print('image',image_url)
+            parsed_url = urlparse(image_url)
+            
+            image_file_name = os.path.basename(parsed_url.path)
+            print('image_file_name',image_file_name)
+
+            
+            image = ImageUpload.objects.get(image__icontains=image_file_name)
+            print('image',image)
+            # Check if the user is the owner of the image
+            if image.personal_info.user != request.user:
+                return Response({"message": "You are not authorized to delete this image."}, status=status.HTTP_403_FORBIDDEN)
+            # Delete the image
+            image.delete()
+            # Delete the image file from S3        
+            if settings.USE_S3:
+                storage = S3Boto3Storage()
+                storage.delete(image.image.name)
+                
+                parsed_url = urlparse(image_url)
+                print('parsed_url',parsed_url)
+                storage.delete(parsed_url.path.lstrip('/'))
+                return Response({"message": "Image deleted successfully.", 'success_status': 'true'}, status=status.HTTP_200_OK)
+          
+        except ImageUpload.DoesNotExist:
+            return Response({"message": "Image not found."}, status=status.HTTP_404_NOT_FOUND)
