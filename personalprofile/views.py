@@ -193,6 +193,18 @@ class ImageUploadAPIView(APIView):
 class ImageDeleteAPIView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('image_url', in_=openapi.IN_QUERY, type=openapi.TYPE_STRING, required=True),
+        ],
+        responses={
+            '200': openapi.Response('OK'),
+            '400': 'Bad Request',
+            '403': 'Forbidden',
+            '404': 'Not Found',
+        },
+        operation_id='deleteImage'
+    )
     
     def delete(self, request):
        
