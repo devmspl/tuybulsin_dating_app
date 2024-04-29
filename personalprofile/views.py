@@ -188,7 +188,7 @@ class ImageUploadAPIView(APIView):
     
 
 
-import boto3
+
 
 class ImageDeleteAPIView(APIView):
     authentication_classes = [TokenAuthentication]
@@ -197,11 +197,9 @@ class ImageDeleteAPIView(APIView):
     def delete(self, request):
        
         try:
-            print("------------------------------")
             print('data',request.data)
             # Get the image URL from the request data
             s3 = default_storage
-            s3.open('https://eternity-match.s3.us-east-1.amazonaws.com/media/OIG1_1.jpg', 'w')
             image_url = request.data.get('image_url')
             print('image',image_url)
             parsed_url = urlparse(image_url)
