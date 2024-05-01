@@ -25,10 +25,16 @@ class Plan(models.Model):
 class PersonalInformation(models.Model):
     # GENDER_CHOICES = (
     #     ('M', 'Male'),
+
     #     ('F', 'Female'),
     # 
-    #     ('O', 'Other')
+    
+    #     ('O', 'Other'),
+
+
+ 
     # )
+
     # MARITAL_STATUS_CHOICES = (
     #     ('S', 'Single'),
     #     ('M', 'Married'),
@@ -48,6 +54,8 @@ class PersonalInformation(models.Model):
     # gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
     first_name = models.CharField(max_length = 200,blank=True,null=True)
     last_name = models.CharField(max_length = 200,blank=True,null=True)
+    contact_person_first_name = models.CharField(max_length = 200,blank=True,null=True)
+    contact_person_last_name = models.CharField(max_length = 200,blank=True,null=True)
     location = models.CharField(max_length = 200,blank=True,null=True)
     gender = models.CharField(max_length=100)
     year_of_birth = models.CharField(max_length=50,default=0)
@@ -58,19 +66,20 @@ class PersonalInformation(models.Model):
     weight = models.CharField(max_length=10)
     education = models.CharField(max_length=255)
     job_title = models.CharField(max_length=255)
-    company_name = models.CharField(max_length=255)
-    city = models.CharField(max_length=255)
-    country = models.CharField(max_length=255)
+    company_name = models.CharField(max_length=255,null=True,blank=True)
+    city = models.CharField(max_length=255,null=True,blank=True)
+    country = models.CharField(max_length=255,null=True,blank=True)
     # residency_status = models.CharField(max_length=2, choices=RESIDENCY_STATUS_CHOICES)
     residency_status = models.CharField(max_length=200)
     religion = models.CharField(max_length=255)
     religiousness_scale = models.IntegerField()
-    native_language = models.CharField(max_length=255)
-    other_languages = models.CharField(max_length=255)
+    native_language = models.CharField(max_length=255,null=True,blank=True)
+    other_languages = models.CharField(max_length=255,null=True,blank=True)
     other_skills = models.TextField()
     smoking = models.BooleanField(default=False)
     drinking = models.BooleanField(default = False)
     phone_number = models.CharField(max_length = 20, null=True,blank=True)
+    contact_relationship_sibs = models.CharField(max_length=100,null=True,blank=True)
     
     # plan = models.ForeignKey(Plan, on_delete=models.SET_DEFAULT, default=Plan.objects.get(name='basic'))
     plan = models.ForeignKey('Plan', on_delete=models.SET_NULL, null=True, blank=True)

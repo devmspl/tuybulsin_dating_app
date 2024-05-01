@@ -25,9 +25,17 @@ class LikeProfileAPIView(APIView):
     def post(self, request, pk, format=None):
         profile = PersonalInformation.objects.get(pk=pk)
         like, created = LikeDislike.objects.get_or_create(user=request.user, profile=profile)
+        if profile.user == request.user:
+            return Response({"message": "You cannot like your own profile."}, status=400)
+        
+        like, created = LikeDislike.objects.get_or_create(user=request.user, profile=profile)
         if not created:
-            like.liked = True
-            like.save()
+            if not like.liked:  # Check if the user hasn't already liked the profile
+                like.liked = True
+                like.save()
+                return Response({"message": "Profile liked successfully."}, status=200)
+            else:
+                return Response({"message": "You have already liked this profile."}, status=400)
         return Response({"message": "Profile liked successfully."}, status=200)
 
 
@@ -132,9 +140,12 @@ class RandomProfileView(APIView):
         age_max = user_prefernce_serializer.data['age_max']
         print("location",location)
 
+ 
         filters =  Q(user_preference__location=location)
+  
         if education:
                 filters &= Q(user_preference__education=education)
+
         if profession:
                 filters &= Q(user_preference__profession=profession)
         if height:

@@ -49,7 +49,7 @@ class PersonalInformationSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = PersonalInformation
-        fields = ('id', 'first_name', 'last_name', 'location', 'gender', 'year_of_birth', 'marital_status', 'nationality', 'height', 'weight', 'education', 'job_title', 'company_name', 'city', 'country', 'residency_status', 'religion', 'religiousness_scale', 'native_language', 'other_languages', 'other_skills', 'smoking', 'drinking', 'phone_number', 'user', 'plan', 'images','preference')
+        fields = ('id', 'first_name', 'last_name', 'location', 'gender', 'year_of_birth', 'marital_status', 'nationality', 'height', 'weight', 'education', 'job_title', 'company_name', 'city', 'country', 'residency_status', 'religion', 'religiousness_scale', 'native_language', 'other_languages', 'other_skills', 'smoking', 'drinking', 'phone_number', 'user', 'plan', 'images','preference','contact_person_first_name','contact_person_last_name','contact_relationship_sibs')
 
   
     def get_images(self, obj):
