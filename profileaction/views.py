@@ -131,17 +131,19 @@ class RandomProfileView(APIView):
         user_prefernce_serializer = UserPreferenceSerializer(user_preference)
        
         print("userprefernce", user_prefernce_serializer.data)
-        location = user_prefernce_serializer.data['location']
+        distance = user_prefernce_serializer.data['distance']
         education = user_prefernce_serializer.data['education']
         profession = user_prefernce_serializer.data['profession']
         height = user_prefernce_serializer.data['height']
         weight = user_prefernce_serializer.data['weight']
         age_min = user_prefernce_serializer.data['age_min']
         age_max = user_prefernce_serializer.data['age_max']
-        print("location",location)
+        lat = user_prefernce_serializer.data['lat']
+        long = user_prefernce_serializer.data['long']
+        print("location",distance)
 
  
-        filters =  Q(user_preference__location=location)
+        filters =  Q(user_preference__distance=distance)
   
         if education:
                 filters &= Q(user_preference__education=education)
