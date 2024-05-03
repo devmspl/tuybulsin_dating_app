@@ -273,6 +273,28 @@ class UpdateUserPreferenceAPIView(APIView):
             return Response(serializer.data, status=200)
         return Response(form.errors, status=400)
     
+
+class UpdateUserPreferenceLatLong(APIView):
+    def put(self, request):
+        form = UserPreferenceForm(request.data)
+        if form.is_valid():
+            # Get the user preference object for the current user
+            user_preference = UserPreference.objects.get(user=request.user)
+
+            # Update lat and long fields if they are present in the request data
+            if 'lat' in request.data:
+                user_preference.lat = request.data['lat']
+            if 'long' in request.data:
+                user_preference.long = request.data['long']
+
+            # Save the updated user preference object
+            user_preference.save()
+
+            # Serialize and return the updated user preference object
+            serializer = UserPreferenceSerializer(user_preference)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 class GetUserPreferenceAPIView(APIView):
     @swagger_auto_schema(
         manual_parameters=[
