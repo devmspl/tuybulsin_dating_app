@@ -245,7 +245,9 @@ class UpdateUserPreferenceAPIView(APIView):
             print('amplify_id',amplify_user_id)
             age_min =  request.data.get('age_min')
             age_max =  request.data.get('age_max')
-            location =  request.data.get('location')
+            distance =  request.data.get('distance')
+            lat =  request.data.get('lat')
+            long =  request.data.get('long')
             education =  request.data.get('education')
             profession =  request.data.get('profession')
             height =  request.data.get('height')
@@ -257,11 +259,13 @@ class UpdateUserPreferenceAPIView(APIView):
                 print('user prefernece',user_preference)
                 user_preference.age_min = age_min
                 user_preference.age_max = age_max
-                user_preference.location = location
+                user_preference.distance = distance
                 user_preference.education = education
                 user_preference.profession = profession
                 user_preference.height = height
                 user_preference.weight = weight
+                user_preference.lat = lat
+                user_preference.long = long
                 user_preference.save()
             except CustomUser.DoesNotExist:
                 return Response({"error": "User not found"}, status=404)
