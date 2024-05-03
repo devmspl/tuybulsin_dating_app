@@ -25,11 +25,13 @@ class PersonalInformationSerializer(serializers.ModelSerializer):
                 preferences.append({
                     'age_min': user_preference.age_min,
                     'age_max': user_preference.age_max,
-                    'location': user_preference.location,
+                    'distance': user_preference.distance,
                     'education': user_preference.education,
                     'profession': user_preference.profession,
                     'height': user_preference.height,
                     'weight': user_preference.weight,
+                    'lat': user_preference.lat,
+                    'long': user_preference.long
                 })
             return preferences
         except UserPreference.DoesNotExist:
@@ -84,7 +86,7 @@ class ImageUploadSerializer(serializers.Serializer):
     def create(self, validated_data):
         images_data = validated_data.pop('images')
         image_urls = []
-        s3_bucket = 'dating-static-jar'
+        s3_bucket = 'eternity-match'
         s3_client = boto3.client('s3')
 
         for image_data in images_data:
