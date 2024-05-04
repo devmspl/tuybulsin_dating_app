@@ -134,6 +134,8 @@ class LikedProfilesAPIView(APIView):
 #         raise ValueError("Invalid coordinate format")
 
 def convert_to_decimal(coord):
+    if coord is None:
+        return 0.0
     return float(coord)
 
 
