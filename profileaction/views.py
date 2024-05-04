@@ -119,19 +119,22 @@ class LikedProfilesAPIView(APIView):
 # def customfilter(location,education,profession,height,weight,age_min,age_max):
 
 
+# def convert_to_decimal(coord):
+#     parts = re.split('[°\'"]', coord)
+#     if len(parts) == 2:
+#         degrees, direction = parts
+#         return float(degrees) if direction.strip() in ['N', 'E'] else -float(degrees)
+#     elif len(parts) == 4:
+#         degrees, minutes, direction = parts[:3]
+#         return float(degrees) + float(minutes) / 60 if direction.strip() in ['N', 'E'] else -(float(degrees) + float(minutes) / 60)
+#     elif len(parts) == 6:
+#         degrees, minutes, seconds, direction = parts[:4]
+#         return float(degrees) + float(minutes) / 60 + float(seconds) / 3600 if direction.strip() in ['N', 'E'] else -(float(degrees) + float(minutes) / 60 + float(seconds) / 3600)
+#     else:
+#         raise ValueError("Invalid coordinate format")
+
 def convert_to_decimal(coord):
-    parts = re.split('[°\'"]', coord)
-    if len(parts) == 2:
-        degrees, direction = parts
-        return float(degrees) if direction.strip() in ['N', 'E'] else -float(degrees)
-    elif len(parts) == 4:
-        degrees, minutes, direction = parts[:3]
-        return float(degrees) + float(minutes) / 60 if direction.strip() in ['N', 'E'] else -(float(degrees) + float(minutes) / 60)
-    elif len(parts) == 6:
-        degrees, minutes, seconds, direction = parts[:4]
-        return float(degrees) + float(minutes) / 60 + float(seconds) / 3600 if direction.strip() in ['N', 'E'] else -(float(degrees) + float(minutes) / 60 + float(seconds) / 3600)
-    else:
-        raise ValueError("Invalid coordinate format")
+    return float(coord)
 
 
 class RandomProfileView(APIView):
