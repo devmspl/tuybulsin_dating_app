@@ -230,10 +230,10 @@ class RandomProfileView(APIView):
                     profile_data['amplify_user_id'] = amplify_user_id
                     nearby_users.append(other_user)
 
-            filter_user_by_preference = nearby_users
+                filter_user_by_preference = nearby_users
 
-            print('filter user', filter_user_by_preference)
-            return Response({'message':'profile selected','data': profile_data,'success_status':'true'})
+                print('filter user', filter_user_by_preference)
+                return Response({'message':'profile selected','data': profile_data,'success_status':'true'})
               
 
         profiles = PersonalInformation.objects.filter()
