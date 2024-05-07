@@ -517,24 +517,26 @@ class AudioDeleteAPIView(APIView):
 
     def delete(self, request):
         file_name = request.data.get('file_name')
-        print('file',file_name)
         # Check if the file belongs to the authenticated user
         if not file_name:
             return Response({'error': 'File name not provided'}, status=status.HTTP_400_BAD_REQUEST)
-        print('usr',request.user,)
-        audio_message = AudioMessage.objects.get(user=request.user, audio_file__contains=file_name)
-        print('audmsg',audio_message)
-        # except AudioMessage.DoesNotExist:
-        #     return Response({'error': 'File not found or does not belong to the authenticated user'},
-        #                     status=status.HTTP_404_NOT_FOUND)
+       
 
-        # Delete file from S3 bucket using Django's default storage
+        file_name = os.path.basename(file_name)
+        try:
+            audio_message = AudioMessage.objects.get(user=request.user, audio_file__contains=file_name)
+        except AudioMessage.DoesNotExist:
+             return Response({'error': 'File not found or does not belong to the authenticated user'},
+                        status=status.HTTP_404_NOT_FOUND)
+      
+       
         try:
             default_storage.delete(file_name)
+           
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         # Delete the audio message record from the database
         audio_message.delete()
 
-        return Response({"message": "Image not found."},status=status.HTTP_204_NO_CONTENT)
+        return Response({'message': 'File deleted successfully'},status=status.HTTP_200_OK)
