@@ -4,7 +4,7 @@ from rest_framework import serializers
 from user_management.models import CustomUser
 from user_management.serializers import CustomUserSerializer
 
-from .models import PersonalInformation, Plan, UserPreference
+from .models import AudioMessage, PersonalInformation, Plan, UserPreference
 from rest_framework.validators import UniqueValidator
 
 from .models import ImageUpload
@@ -118,3 +118,18 @@ class UserPreferenceSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserPreference
         fields = '__all__'
+
+
+
+class AudioMessageSerializer(serializers.ModelSerializer):
+    audio_url = serializers.SerializerMethodField()
+    class Meta:
+        model = AudioMessage
+        fields = ['id', 'user', 'audio_file', 'created_at','audio_url']
+
+
+    def get_audio_url(self, obj):
+        request = self.context.get('request')
+        if request and obj.audio_file:
+            return request.build_absolute_uri(obj.audio_file.url)
+        return None

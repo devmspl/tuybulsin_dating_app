@@ -2,7 +2,7 @@ import os
 from django.conf import settings
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404
-
+from rest_framework.parsers import FileUploadParser
 # Create your views here.
 from django.shortcuts import render
 import stripe
@@ -12,11 +12,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
-
+from django.core.files.base import ContentFile
 from personalprofile.forms import UserPreferenceForm
 from user_management.models import CustomUser
-from .models import ImageUpload, PersonalInformation, Plan, UserPreference
-from .serializers import ImageUploadSerializer, PersonalInformationSerializer, PlanSerializer, UserPreferenceSerializer
+from .models import AudioMessage, ImageUpload, PersonalInformation, Plan, UserPreference
+from .serializers import AudioMessageSerializer, ImageUploadSerializer, PersonalInformationSerializer, PlanSerializer, UserPreferenceSerializer
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -26,6 +26,7 @@ from .models import ImageUpload
 from django.core.files.storage import default_storage
 from storages.backends.s3boto3 import S3Boto3Storage
 from urllib.parse import urlparse
+import boto3
 
 
 
@@ -473,3 +474,67 @@ class ImageDeleteAPIView(APIView):
           
         except ImageUpload.DoesNotExist:
             return Response({"message": "Image not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+
+class AudioUploadAPIView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    parser_class = (FileUploadParser,)
+
+    def post(self, request, *args, **kwargs):
+        audio_file = request.data.get('audio_file')
+    
+        user = request.user
+
+        if not audio_file:
+            return Response({'error': 'No file found'}, status=status.HTTP_400_BAD_REQUEST)
+        
+
+        file_name = f'audio_files/{audio_file.name}'
+        file_content = ContentFile(audio_file.read())
+        file_path = default_storage.save(file_name, file_content)
+
+        bucket_name = 'eternity-match'
+        key = f'audio_files/{user.id}/{audio_file.name}'
+
+
+        # Create the AudioMessage object
+        audio_message = AudioMessage.objects.create(user=user, audio_file=file_path)
+
+        # Get the S3 URL
+        s3_url = f'https://{bucket_name}.s3.amazonaws.com/{key}'
+
+        # Update the serializer to include the S3 URL in the response
+        serializer = AudioMessageSerializer(audio_message,context={'request': request})
+        response_data = serializer.data
+        response_data['audio_url'] = s3_url
+
+        return Response(response_data, status=status.HTTP_201_CREATED)
+    
+class AudioDeleteAPIView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request):
+        file_name = request.data.get('file_name')
+        print('file',file_name)
+        # Check if the file belongs to the authenticated user
+        if not file_name:
+            return Response({'error': 'File name not provided'}, status=status.HTTP_400_BAD_REQUEST)
+        print('usr',request.user,)
+        audio_message = AudioMessage.objects.get(user=request.user, audio_file__contains=file_name)
+        print('audmsg',audio_message)
+        # except AudioMessage.DoesNotExist:
+        #     return Response({'error': 'File not found or does not belong to the authenticated user'},
+        #                     status=status.HTTP_404_NOT_FOUND)
+
+        # Delete file from S3 bucket using Django's default storage
+        try:
+            default_storage.delete(file_name)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        # Delete the audio message record from the database
+        audio_message.delete()
+
+        return Response({"message": "Image not found."},status=status.HTTP_204_NO_CONTENT)
